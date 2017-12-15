@@ -15,7 +15,7 @@
   limitations under the License.
   -->
 <resources>
-    <string name="app_name">monkey</string>
+    <string name="app_name">Monkey</string>
     <string name="album_name_all">All Media</string>
 
     <string name="button_preview">Preview</string>
