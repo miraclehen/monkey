@@ -59,68 +59,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(final View v) {
-        RxPermissions rxPermissions = new RxPermissions(this);
-        rxPermissions.request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .subscribe(new Observer<Boolean>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-
-                    }
-
-                    @Override
-                    public void onNext(Boolean aBoolean) {
-                        if (aBoolean) {
-                            switch (v.getId()) {
-                                case R.id.zhihu:
-                                    Matisse.from(MainActivity.this)
-                                            .choose(MimeType.ofAll(), false)
-                                            .countable(true)
-                                            .spanCount(4)
-                                            .captureStrategy(new CaptureStrategy(true, "com.zhihu.matisse.sample.fileprovider"))
-                                            .maxSelectable(9)
-                                            .groupByDate(true)
-                                            .extraUris(getUri())
-                                            .extraUriClickToastMsg("我被点击了！")
+        switch (v.getId()) {
+            case R.id.zhihu:
+                Matisse.from(MainActivity.this)
+                        .choose(MimeType.ofAll(), false)
+                        .countable(true)
+                        .spanCount(4)
+                        .captureStrategy(new CaptureStrategy(true, "com.zhihu.matisse.sample.fileprovider"))
+                        .maxSelectable(9)
+                        .groupByDate(true)
+                        .extraUris(getUri())
+                        .extraUriClickToastMsg("我被点击了！")
 //                                            .record(true)
-                                            .capture(true)
-                                            .selectedUris(getUri())
-                                            .restrictOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
-                                            .thumbnailScale(0.85f)
-                                            .imageEngine(new GlideEngine())
-                                            .forResult(REQUEST_CODE_CHOOSE);
-                                    break;
-                                case R.id.dracula:
-                                    Matisse.from(MainActivity.this)
-                                            .choose(MimeType.ofImage())
-                                            .showSingleMediaType(true)
-                                            .theme(R.style.Matisse_Dracula)
-                                            .captureStrategy(new CaptureStrategy(true, "com.zhihu.matisse.sample.fileprovider"))
-                                            .countable(false)
-                                            .spanCount(4)
-                                            .groupByDate(true)
-                                            .maxSelectable(9)
-                                            .capture(true)
-                                            .imageEngine(new PicassoEngine())
-                                            .forResult(REQUEST_CODE_CHOOSE);
-                                    break;
-                            }
-                            mAdapter.setData(null);
-                        } else {
-                            Toast.makeText(MainActivity.this, R.string.permission_request_denied, Toast.LENGTH_LONG)
-                                    .show();
-                        }
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-
-                    }
-
-                    @Override
-                    public void onComplete() {
-
-                    }
-                });
+                        .capture(true)
+                        .selectedUris(getUri())
+                        .restrictOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
+                        .thumbnailScale(0.85f)
+                        .imageEngine(new GlideEngine())
+                        .forResult(REQUEST_CODE_CHOOSE);
+                break;
+            case R.id.dracula:
+                Matisse.from(MainActivity.this)
+                        .choose(MimeType.ofImage())
+                        .showSingleMediaType(true)
+                        .theme(R.style.Matisse_Dracula)
+                        .captureStrategy(new CaptureStrategy(true, "com.zhihu.matisse.sample.fileprovider"))
+                        .countable(false)
+                        .spanCount(4)
+                        .groupByDate(true)
+                        .maxSelectable(9)
+                        .capture(true)
+                        .imageEngine(new PicassoEngine())
+                        .forResult(REQUEST_CODE_CHOOSE);
+                break;
+        }
+        mAdapter.setData(null);
     }
 
     @Override

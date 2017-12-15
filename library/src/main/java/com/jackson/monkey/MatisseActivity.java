@@ -15,19 +15,28 @@
  */
 package com.jackson.monkey;
 
+import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Parcelable;
+import android.support.annotation.MainThread;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -66,9 +75,11 @@ public class MatisseActivity extends AppCompatActivity implements
         AlbumCollection.AlbumCallbacks, AdapterView.OnItemSelectedListener,
         MediaSelectionFragment.SelectionProvider, View.OnClickListener,
         AlbumMediaAdapter.CheckStateListener, AlbumMediaAdapter.OnMediaClickListener,
-        AlbumMediaAdapter.OnPhotoCapture {
+        AlbumMediaAdapter.OnPhotoCapture, ActivityCompat.OnRequestPermissionsResultCallback {
 
     public static final String TAG = MatisseActivity.class.getSimpleName();
+
+    public static final int PERMISSION_REQUEST_READ_EXTERNAL_STORAGE = 0x11;
 
     public static final String EXTRA_RESULT_SELECTION = "extra_result_selection";
     public static final String EXTRA_RESULT_SELECTION_ITEM = "extra_result_selection_item";
@@ -144,6 +155,16 @@ public class MatisseActivity extends AppCompatActivity implements
         mAlbumsSpinner.setAdapter(mAlbumsAdapter);
         mAlbumCollection.onCreate(this, this);
         mAlbumCollection.onRestoreInstanceState(savedInstanceState);
+
+        if (Build.VERSION.SDK_INT < 22) {
+            loadAlbums();
+        } else {
+            requestRunningPermission();
+        }
+
+    }
+
+    private void loadAlbums() {
         mAlbumCollection.loadAlbums();
     }
 
@@ -233,59 +254,31 @@ public class MatisseActivity extends AppCompatActivity implements
 
     }
 
-    private MediaItem makeCaptureItem(String path, MimeType type) {
-        //文件Id
-        long id = -1;
-        //文件大小
-        long size = new File(path).length();
-        //时长
-        long duration = 0;
-        //纬度
-        double latitude = 0;
-        //经度
-        double longitude = 0;
-        //宽度
-        long width = 0;
-        //高度
-        long height = 0;
-        //拍摄时间
-        String dateTime = "";
-        if (type == MimeType.JPEG) {
-            //拍摄相片
-            try {
-                ExifInterfaceProcessor exifInterfaceProcessor = new ExifInterfaceProcessor(path);
-                dateTime = exifInterfaceProcessor.getDateTime();
-                latitude = exifInterfaceProcessor.getLatitude();
-                longitude = exifInterfaceProcessor.getLongitude();
-                width = exifInterfaceProcessor.getWidth();
-                height = exifInterfaceProcessor.getHeight();
-            } catch (Exception e) {
-                e.printStackTrace();
+    @RequiresApi(22)
+    private void requestRunningPermission() {
+        if (ActivityCompat.checkSelfPermission(MatisseActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                //show tip
+                Snackbar.make(mButtonPreview, "需要访问你的相册的权限", Snackbar.LENGTH_INDEFINITE)
+                        .setAction("ok", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                ActivityCompat.requestPermissions(MatisseActivity.this,
+                                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                                        PERMISSION_REQUEST_READ_EXTERNAL_STORAGE);
+                            }
+                        })
+                        .show();
+            }else {
+                ActivityCompat.requestPermissions(MatisseActivity.this,
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                        PERMISSION_REQUEST_READ_EXTERNAL_STORAGE);
             }
-        } else {
-            //录制视频
-            try {
-                MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-                mmr.setDataSource(path);
-
-                width = Long.parseLong(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH));
-                height = Long.parseLong(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT));
-
-                String dur = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-                if (dur != null) {
-                    duration = Long.valueOf(dur);
-                }
-                dateTime = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DATE);
-                SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd'T'HHmmss.SSS'Z'", Locale.CHINA);
-                dateTime = String.valueOf(format.parse(dateTime).getTime());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
+        }else {
+           //已有权限
+            loadAlbums();
         }
-        return new MediaItem(id, type.toString(), size, duration,
-                latitude, longitude, width, height, path, dateTime);
-
     }
 
     private void updateBottomToolbar() {
@@ -464,6 +457,22 @@ public class MatisseActivity extends AppCompatActivity implements
     @Override
     public void finish() {
         super.finish();
-        overridePendingTransition(0,R.anim.slide_out_bottom);
+        overridePendingTransition(0, R.anim.slide_out_bottom);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == PERMISSION_REQUEST_READ_EXTERNAL_STORAGE) {
+            if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                //权限允许
+                loadAlbums();
+            } else {
+                //权限被拒绝
+
+            }
+        } else {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+
     }
 }

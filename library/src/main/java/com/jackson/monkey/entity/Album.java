@@ -28,18 +28,7 @@ import com.jackson.monkey.loader.AlbumLoader;
 
 
 public class Album implements Parcelable {
-    public static final Creator<Album> CREATOR = new Creator<Album>() {
-        @Nullable
-        @Override
-        public Album createFromParcel(Parcel source) {
-            return new Album(source);
-        }
 
-        @Override
-        public Album[] newArray(int size) {
-            return new Album[size];
-        }
-    };
     public static final String ALBUM_ID_ALL = String.valueOf(-1);
     public static final String ALBUM_NAME_ALL = "All";
 
@@ -117,5 +106,18 @@ public class Album implements Parcelable {
     public boolean isEmpty() {
         return mCount == 0;
     }
+
+    public static final Creator<Album> CREATOR = new Creator<Album>() {
+        @Nullable
+        @Override
+        public Album createFromParcel(Parcel source) {
+            return new Album(source);
+        }
+
+        @Override
+        public Album[] newArray(int size) {
+            return new Album[size];
+        }
+    };
 
 }

@@ -19,7 +19,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-    <com.zhihu.matisse.internal.ui.widget.PreviewViewPager
+    <com.jackson.monkey.ui.widget.PreviewViewPager
         android:id="@+id/pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -73,7 +73,7 @@
         android:layout_margin="8dp"
         android:fitsSystemWindows="true">
 
-        <com.zhihu.matisse.internal.ui.widget.CheckView
+        <com.jackson.monkey.ui.widget.CheckView
             android:id="@+id/check_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
