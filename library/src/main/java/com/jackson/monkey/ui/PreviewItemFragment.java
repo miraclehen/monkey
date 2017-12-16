@@ -18,25 +18,41 @@ package com.jackson.monkey.ui;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Point;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.FileProvider;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+import android.widget.VideoView;
 
 import com.github.chrisbanes.photoview.PhotoView;
 import com.jackson.monkey.R;
 import com.jackson.monkey.entity.MediaItem;
 import com.jackson.monkey.entity.SelectionSpec;
+import com.jackson.monkey.ui.widget.PreviewViewPager;
 import com.jackson.monkey.utils.PhotoMetadataUtils;
 
+import java.io.File;
 
 
 public class PreviewItemFragment extends Fragment {
+    private static final String BUNDLE_KEY_VIDEO_VIEW_POSITION = "BUNDLE_KEY_VIDEO_VIEW_POSITION";
 
     private static final String ARGS_ITEM = "args_item";
+
+    private MediaItem mMediaItem;
+
+    private View videoPlayButton;
+    private PhotoView imageView;
+    private VideoView videoView;
+
+    private int position;
 
     public static PreviewItemFragment newInstance(MediaItem item) {
         PreviewItemFragment fragment = new PreviewItemFragment();
@@ -54,40 +70,81 @@ public class PreviewItemFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        final MediaItem item = getArguments().getParcelable(ARGS_ITEM);
-        if (item == null) {
+        mMediaItem = getArguments().getParcelable(ARGS_ITEM);
+        if (mMediaItem == null) {
             return;
         }
 
-        View videoPlayButton = view.findViewById(R.id.video_play_button);
-        if (item.isVideo()) {
-            videoPlayButton.setVisibility(View.VISIBLE);
-            videoPlayButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setDataAndType(item.uri, "video/*");
-                    try {
-                        startActivity(intent);
-                    } catch (ActivityNotFoundException e) {
-                        Toast.makeText(getContext(), R.string.error_no_video_activity, Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
+        videoPlayButton = view.findViewById(R.id.video_play_button);
+        imageView = view.findViewById(R.id.image_view);
+        videoView = view.findViewById(R.id.video_view);
+
+        if (mMediaItem.isVideo()) {
+            doVideo(view);
         } else {
-            videoPlayButton.setVisibility(View.GONE);
+            doImage(view);
         }
 
-        PhotoView image = (PhotoView) view.findViewById(R.id.image_view);
 
-        Point size = PhotoMetadataUtils.getBitmapSize(item.getContentUri(), getActivity());
-        if (item.isGif()) {
-            SelectionSpec.getInstance().imageEngine.loadGifImage(getContext(), size.x, size.y, image,
-                    item.getContentUri());
+    }
+
+    /**
+     * 当资源类型是图片
+     */
+    private void doImage(View view) {
+        videoView.setVisibility(View.GONE);
+        videoPlayButton.setVisibility(View.GONE);
+
+        Point size = PhotoMetadataUtils.getBitmapSize(mMediaItem.getContentUri(), getActivity());
+        if (mMediaItem.isGif()) {
+            SelectionSpec.getInstance().imageEngine.loadGifImage(getContext(), size.x, size.y, imageView,
+                    mMediaItem.getContentUri());
         } else {
-            SelectionSpec.getInstance().imageEngine.loadImage(getContext(), size.x, size.y, image,
-                    item.getContentUri());
+            SelectionSpec.getInstance().imageEngine.loadImage(getContext(), size.x, size.y, imageView,
+                    mMediaItem.getContentUri());
         }
+    }
+
+    /**
+     * 当资源类型是视频
+     */
+    private void doVideo(final View view) {
+        imageView.setVisibility(View.GONE);
+
+        videoView.setVideoURI(mMediaItem.uri);
+        videoView.requestFocus();
+
+        videoPlayButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                videoPlayButton.setVisibility(View.INVISIBLE);
+                videoView.start();
+            }
+        });
+
+        videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mediaPlayer) {
+                videoView.seekTo(0);
+                videoPlayButton.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(BUNDLE_KEY_VIDEO_VIEW_POSITION,videoView.getCurrentPosition());
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        if (savedInstanceState != null) {
+            position = savedInstanceState.getInt(BUNDLE_KEY_VIDEO_VIEW_POSITION,0);
+            videoView.seekTo(position);
+        }
+
     }
 
     public void resetView() {

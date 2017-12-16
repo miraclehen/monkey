@@ -506,7 +506,7 @@ public class MatisseActivity extends AppCompatActivity implements
                 mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_VIDEO, CaptureType.Video);
             } else {
                 //被拒绝
-                Toast.makeText(MatisseActivity.this, "无法获取到写入文件权限", Toast.LENGTH_LONG).show();
+                Toast.makeText(MatisseActivity.this,"无法获取到写入文件权限", Toast.LENGTH_LONG).show();
             }
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
