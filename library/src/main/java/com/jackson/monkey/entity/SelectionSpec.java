@@ -53,9 +53,6 @@ public final class SelectionSpec {
     public ImageEngine imageEngine;
     public boolean groupByDate;
     public final List<Uri> selectedUris = new ArrayList<>();
-    public final List<Uri> extraUrisList = new ArrayList<>();
-    public String extraUriClickToastMsg = "this is selected uri click toast msg";
-
 
     private SelectionSpec() {
 
@@ -92,8 +89,6 @@ public final class SelectionSpec {
         imageEngine = new GlideEngine();
         groupByDate = false;
         selectedUris.clear();
-        extraUrisList.clear();
-        extraUriClickToastMsg = "this is selected uri click toast msg";
     }
 
     public boolean singleSelectionModeEnabled() {
@@ -105,11 +100,11 @@ public final class SelectionSpec {
     }
 
     public boolean onlyShowImages() {
-        return showSingleMediaType && MimeType.ofImage().containsAll(mimeTypeSet);
+        return MimeType.ofImage().containsAll(mimeTypeSet);
     }
 
     public boolean onlyShowVideos() {
-        return showSingleMediaType && MimeType.ofVideo().containsAll(mimeTypeSet);
+        return MimeType.ofVideo().containsAll(mimeTypeSet);
     }
 
     private static final class InstanceHolder {
@@ -118,6 +113,7 @@ public final class SelectionSpec {
 
     /**
      * 是否可以录制或者拍照
+     *
      * @return
      */
     public boolean isCapture() {

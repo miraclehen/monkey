@@ -322,10 +322,6 @@ public class AlbumMediaAdapter extends
             int checkedNum = mSelectedCollection.checkedNumOf(item);
             if (checkedNum == CheckView.UNCHECKED) {
                 if (assertAddSelection(holder.itemView.getContext(), item)) {
-                    if (mSelectionSpec.extraUrisList.contains(item.uri)) {
-                        Toast.makeText(mContext, mSelectionSpec.extraUriClickToastMsg,
-                                Toast.LENGTH_SHORT).show();
-                    }
                     mSelectedCollection.add(item);
                     if (!mSelectedUris.contains(item.uri)) {
                         mSelectedUris.add(item.uri);
@@ -344,10 +340,6 @@ public class AlbumMediaAdapter extends
                 notifyCheckStateChanged();
             } else {
                 if (assertAddSelection(holder.itemView.getContext(), item)) {
-                    if (mSelectionSpec.extraUrisList.contains(item.uri)) {
-                        Toast.makeText(mContext, mSelectionSpec.extraUriClickToastMsg,
-                                Toast.LENGTH_SHORT).show();
-                    }
                     mSelectedCollection.add(item);
                     if (mSelectedUris.contains(item.uri)) {
                         mSelectedUris.add(item.uri);

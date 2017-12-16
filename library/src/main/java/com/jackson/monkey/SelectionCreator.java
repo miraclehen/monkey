@@ -306,30 +306,6 @@ public final class SelectionCreator {
         return this;
     }
 
-    /**
-     * 外部传入点击出现Toast的Uri
-     * @param uris
-     * @return
-     */
-    public SelectionCreator extraUris(List<Uri> uris) {
-        if (uris == null) {
-            throw new IllegalArgumentException("SelectionCreator selectedUris uris cannot be null!");
-        }
-        mSelectionSpec.extraUrisList.addAll(uris);
-        return this;
-    }
-
-    /**
-     * 在SelectedUrisPurpose = Toast的状态下。点击对应Item显示的文本信息
-     * @param message
-     */
-    public SelectionCreator extraUriClickToastMsg(String message){
-        if (message == null) {
-            throw new IllegalArgumentException("extraUriClickToastMsg message cannot null!");
-        }
-        mSelectionSpec.extraUriClickToastMsg = message;
-        return this;
-    }
 
 
 

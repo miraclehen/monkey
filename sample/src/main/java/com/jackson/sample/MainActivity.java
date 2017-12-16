@@ -63,8 +63,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         .captureStrategy(new CaptureStrategy(true, "com.jackson.sample.fileprovider"))
                         .maxSelectable(9)
                         .groupByDate(true)
-                        .extraUris(getUri())
-                        .extraUriClickToastMsg("我被点击了！")
                         .capture(CaptureType.Image)
                         .selectedUris(getUri())
                         .restrictOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
