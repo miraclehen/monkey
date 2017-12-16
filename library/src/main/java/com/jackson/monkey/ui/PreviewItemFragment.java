@@ -26,13 +26,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.github.chrisbanes.photoview.PhotoView;
 import com.jackson.monkey.R;
 import com.jackson.monkey.entity.MediaItem;
 import com.jackson.monkey.entity.SelectionSpec;
 import com.jackson.monkey.utils.PhotoMetadataUtils;
 
-import it.sephiroth.android.library.imagezoom.ImageViewTouch;
-import it.sephiroth.android.library.imagezoom.ImageViewTouchBase;
 
 
 public class PreviewItemFragment extends Fragment {
@@ -79,8 +78,7 @@ public class PreviewItemFragment extends Fragment {
             videoPlayButton.setVisibility(View.GONE);
         }
 
-        ImageViewTouch image = (ImageViewTouch) view.findViewById(R.id.image_view);
-        image.setDisplayType(ImageViewTouchBase.DisplayType.FIT_TO_SCREEN);
+        PhotoView image = (PhotoView) view.findViewById(R.id.image_view);
 
         Point size = PhotoMetadataUtils.getBitmapSize(item.getContentUri(), getActivity());
         if (item.isGif()) {
@@ -94,7 +92,7 @@ public class PreviewItemFragment extends Fragment {
 
     public void resetView() {
         if (getView() != null) {
-            ((ImageViewTouch) getView().findViewById(R.id.image_view)).resetMatrix();
+//            ((PhotoView) getView().findViewById(R.id.image_view)).setmas();
         }
     }
 }

@@ -1,18 +1,16 @@
 package com.jackson.sample;
 
-import android.Manifest;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.net.Uri;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.jackson.monkey.CaptureType;
 import com.jackson.monkey.Matisse;
@@ -22,13 +20,9 @@ import com.jackson.monkey.engine.impl.GlideEngine;
 import com.jackson.monkey.engine.impl.PicassoEngine;
 import com.jackson.monkey.entity.CaptureStrategy;
 import com.jackson.monkey.entity.MediaItem;
-import com.tbruyelle.rxpermissions2.RxPermissions;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import io.reactivex.Observer;
-import io.reactivex.disposables.Disposable;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
@@ -80,7 +74,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.dracula:
                 Matisse.from(MainActivity.this)
-                        .choose(MimeType.ofImage())
+                        .choose(MimeType.ofVideo())
                         .showSingleMediaType(true)
                         .theme(R.style.Matisse_Dracula)
                         .captureStrategy(new CaptureStrategy(true, "com.jackson.sample.fileprovider"))
