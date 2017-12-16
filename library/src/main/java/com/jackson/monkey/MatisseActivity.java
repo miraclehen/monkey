@@ -16,7 +16,6 @@
 package com.jackson.monkey;
 
 import android.Manifest;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -24,18 +23,15 @@ import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Parcelable;
-import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
@@ -45,6 +41,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 import com.jackson.monkey.entity.Album;
@@ -59,13 +56,11 @@ import com.jackson.monkey.ui.SelectedPreviewActivity;
 import com.jackson.monkey.ui.adapter.AlbumMediaAdapter;
 import com.jackson.monkey.ui.adapter.AlbumsAdapter;
 import com.jackson.monkey.ui.widget.AlbumsSpinner;
-import com.jackson.monkey.utils.ExifInterfaceProcessor;
+import com.jackson.monkey.ui.widget.PermissionExplainDialog;
 import com.jackson.monkey.utils.MediaStoreCompat;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Locale;
 
 /**
  * Main Activity to display albums and media content (images/videos) in each album
@@ -80,6 +75,7 @@ public class MatisseActivity extends AppCompatActivity implements
     public static final String TAG = MatisseActivity.class.getSimpleName();
 
     public static final int PERMISSION_REQUEST_READ_EXTERNAL_STORAGE = 0x11;
+    public static final int PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE = 0x12;
 
     public static final String EXTRA_RESULT_SELECTION = "extra_result_selection";
     public static final String EXTRA_RESULT_SELECTION_ITEM = "extra_result_selection_item";
@@ -88,7 +84,7 @@ public class MatisseActivity extends AppCompatActivity implements
     public static final String EXTRA_CONTENT_PATH = "extra_content_path";
     private static final int REQUEST_CODE_PREVIEW = 23;
     private static final int REQUEST_CODE_CAPTURE = 24;
-    private static final int REQUEST_CODE_RECORD = 25;
+    private static final int REQUEST_CODE_VIDEO = 25;
     private final AlbumCollection mAlbumCollection = new AlbumCollection();
     private MediaStoreCompat mMediaStoreCompat;
     //已选择的Item
@@ -105,6 +101,8 @@ public class MatisseActivity extends AppCompatActivity implements
 
     private boolean capterLater = false;
 
+    private int mCaptureType = -1;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         // programmatically set theme before super.onCreate()
@@ -118,7 +116,7 @@ public class MatisseActivity extends AppCompatActivity implements
             setRequestedOrientation(mSpec.orientation);
         }
 
-        if (mSpec.capture || mSpec.record) {
+        if (mSpec.isCapture()) {
             mMediaStoreCompat = new MediaStoreCompat(this);
             if (mSpec.captureStrategy == null)
                 throw new RuntimeException("Don't forget to set CaptureStrategy.");
@@ -159,7 +157,7 @@ public class MatisseActivity extends AppCompatActivity implements
         if (Build.VERSION.SDK_INT < 22) {
             loadAlbums();
         } else {
-            requestRunningPermission();
+            requestReadStoragePermission();
         }
 
     }
@@ -224,7 +222,7 @@ public class MatisseActivity extends AppCompatActivity implements
                 }
                 updateBottomToolbar();
             }
-        } else if (requestCode == REQUEST_CODE_CAPTURE || requestCode == REQUEST_CODE_RECORD) {
+        } else if (requestCode == REQUEST_CODE_CAPTURE || requestCode == REQUEST_CODE_VIDEO) {
             capterLater = true;
             //文件的路径
             final String path = mMediaStoreCompat.getCurrentPhotoPath();
@@ -255,29 +253,57 @@ public class MatisseActivity extends AppCompatActivity implements
     }
 
     @RequiresApi(22)
-    private void requestRunningPermission() {
+    private void requestReadStoragePermission() {
         if (ActivityCompat.checkSelfPermission(MatisseActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
                 //show tip
-                Snackbar.make(mButtonPreview, "需要访问你的相册的权限", Snackbar.LENGTH_INDEFINITE)
-                        .setAction("ok", new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                ActivityCompat.requestPermissions(MatisseActivity.this,
-                                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                                        PERMISSION_REQUEST_READ_EXTERNAL_STORAGE);
-                            }
-                        })
-                        .show();
-            }else {
+                PermissionExplainDialog.newInstance("应用需要访问你的相册的权限,来展示你手机中的相册数据", new PermissionExplainDialog.OnDialogPositiveButtonClickListener() {
+                    @Override
+                    public void onClick() {
+                        ActivityCompat.requestPermissions(MatisseActivity.this,
+                                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                                PERMISSION_REQUEST_READ_EXTERNAL_STORAGE);
+                    }
+                }).show(getSupportFragmentManager(), PermissionExplainDialog.class.getSimpleName());
+            } else {
                 ActivityCompat.requestPermissions(MatisseActivity.this,
                         new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                         PERMISSION_REQUEST_READ_EXTERNAL_STORAGE);
             }
-        }else {
-           //已有权限
+        } else {
+            //已有权限
             loadAlbums();
+        }
+    }
+
+    @RequiresApi(22)
+    private void requestWriteStoragePermission() {
+        if (ActivityCompat.checkSelfPermission(MatisseActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                PermissionExplainDialog.newInstance("应用需要访问你的相册的权限，来存储你的拍照文件", new PermissionExplainDialog.OnDialogPositiveButtonClickListener() {
+                    @Override
+                    public void onClick() {
+                        ActivityCompat.requestPermissions(MatisseActivity.this,
+                                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE);
+                    }
+                }).show(getSupportFragmentManager(), PermissionExplainDialog.class.getSimpleName());
+            } else {
+                ActivityCompat.requestPermissions(MatisseActivity.this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE);
+            }
+
+        } else {
+            if (mSpec.isCapture()) {
+                if (mSpec.captureType == CaptureType.Image) {
+                    mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_CAPTURE, CaptureType.Image);
+                }else {
+                    mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_VIDEO,CaptureType.Video);
+                }
+            }
         }
     }
 
@@ -331,7 +357,7 @@ public class MatisseActivity extends AppCompatActivity implements
         mAlbumCollection.setStateCurrentSelection(position);
         mAlbumsAdapter.getCursor().moveToPosition(position);
         Album album = Album.valueOf(mAlbumsAdapter.getCursor());
-        if (album.isAll() && SelectionSpec.getInstance().capture) {
+        if (album.isAll() && SelectionSpec.getInstance().isCapture()) {
             album.addCaptureCount();
         }
         onAlbumSelected(album);
@@ -360,7 +386,7 @@ public class MatisseActivity extends AppCompatActivity implements
                 mAlbumsSpinner.setSelection(MatisseActivity.this,
                         mAlbumCollection.getCurrentSelection());
                 mCurrentAlbum = Album.valueOf(cursor);
-                if (mCurrentAlbum.isAll() && SelectionSpec.getInstance().capture) {
+                if (mCurrentAlbum.isAll() && SelectionSpec.getInstance().isCapture()) {
                     mCurrentAlbum.addCaptureCount();
                 }
                 onAlbumSelected(mCurrentAlbum);
@@ -439,9 +465,12 @@ public class MatisseActivity extends AppCompatActivity implements
      */
     @Override
     public void capture() {
-        if (mMediaStoreCompat != null) {
-            mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_CAPTURE, MediaStoreCompat.CaptureType.Image);
+        if (Build.VERSION.SDK_INT < 22) {
+            mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_CAPTURE, CaptureType.Image);
+        } else {
+            requestWriteStoragePermission();
         }
+
     }
 
     /**
@@ -449,8 +478,10 @@ public class MatisseActivity extends AppCompatActivity implements
      */
     @Override
     public void record() {
-        if (mMediaStoreCompat != null) {
-            mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_RECORD, MediaStoreCompat.CaptureType.Video);
+        if (Build.VERSION.SDK_INT < 22) {
+            mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_VIDEO, CaptureType.Video);
+        } else {
+            requestWriteStoragePermission();
         }
     }
 
@@ -468,7 +499,14 @@ public class MatisseActivity extends AppCompatActivity implements
                 loadAlbums();
             } else {
                 //权限被拒绝
-
+                Toast.makeText(MatisseActivity.this, "无法获取到访问你的相册权限", Toast.LENGTH_LONG).show();
+            }
+        } else if (requestCode == PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE) {
+            if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_VIDEO, CaptureType.Video);
+            } else {
+                //被拒绝
+                Toast.makeText(MatisseActivity.this, "无法获取到写入文件权限", Toast.LENGTH_LONG).show();
             }
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);

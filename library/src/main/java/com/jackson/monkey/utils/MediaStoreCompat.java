@@ -31,6 +31,7 @@ import android.support.v4.os.EnvironmentCompat;
 import android.text.TextUtils;
 
 
+import com.jackson.monkey.CaptureType;
 import com.jackson.monkey.entity.CaptureStrategy;
 
 import java.io.File;
@@ -54,10 +55,7 @@ public class MediaStoreCompat {
 
 
 
-    public enum CaptureType {
-        Image,
-        Video,
-    }
+
 
     public MediaStoreCompat(Activity activity) {
         mContext = new WeakReference<>(activity);

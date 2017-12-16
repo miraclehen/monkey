@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.jackson.monkey.CaptureType;
 import com.jackson.monkey.Matisse;
 import com.jackson.monkey.MatisseActivity;
 import com.jackson.monkey.MimeType;
@@ -65,13 +66,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         .choose(MimeType.ofAll(), false)
                         .countable(true)
                         .spanCount(4)
-                        .captureStrategy(new CaptureStrategy(true, "com.zhihu.matisse.sample.fileprovider"))
+                        .captureStrategy(new CaptureStrategy(true, "com.jackson.sample.fileprovider"))
                         .maxSelectable(9)
                         .groupByDate(true)
                         .extraUris(getUri())
                         .extraUriClickToastMsg("我被点击了！")
-//                                            .record(true)
-                        .capture(true)
+                        .capture(CaptureType.Image)
                         .selectedUris(getUri())
                         .restrictOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
                         .thumbnailScale(0.85f)
@@ -83,12 +83,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         .choose(MimeType.ofImage())
                         .showSingleMediaType(true)
                         .theme(R.style.Matisse_Dracula)
-                        .captureStrategy(new CaptureStrategy(true, "com.zhihu.matisse.sample.fileprovider"))
+                        .captureStrategy(new CaptureStrategy(true, "com.jackson.sample.fileprovider"))
                         .countable(false)
                         .spanCount(4)
                         .groupByDate(true)
                         .maxSelectable(9)
-                        .capture(true)
+                        .capture(CaptureType.Video)
                         .imageEngine(new PicassoEngine())
                         .forResult(REQUEST_CODE_CHOOSE);
                 break;

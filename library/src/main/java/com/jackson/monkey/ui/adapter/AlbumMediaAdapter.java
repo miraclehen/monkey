@@ -165,6 +165,7 @@ public class AlbumMediaAdapter extends
                 @Override
                 public void onClick(View v) {
                     if (v.getContext() instanceof OnPhotoCapture) {
+                        //启动拍照
                         ((OnPhotoCapture) v.getContext()).capture();
                     }
                 }
@@ -178,6 +179,7 @@ public class AlbumMediaAdapter extends
                 @Override
                 public void onClick(View v) {
                     if (v.getContext() instanceof OnPhotoCapture) {
+                        //录像
                         ((OnPhotoCapture) v.getContext()).record();
                     }
                 }

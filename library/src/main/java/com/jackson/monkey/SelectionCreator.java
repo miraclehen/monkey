@@ -169,21 +169,9 @@ public final class SelectionCreator {
         return this;
     }
 
-    /**
-     * Determines whether the photo capturing is enabled or not on the media grid view.
-     * <p>
-     * If this value is set true, photo capturing entry will appear only on All Media's page.
-     *
-     * @param enable Whether to enable capturing or not. Default value is false;
-     * @return {@link SelectionCreator} for fluent API.
-     */
-    public SelectionCreator capture(boolean enable) {
-        mSelectionSpec.capture = enable;
-        return this;
-    }
 
-    public SelectionCreator record(boolean enable){
-        mSelectionSpec.record = enable;
+    public SelectionCreator capture(CaptureType type) {
+        mSelectionSpec.captureType = type;
         return this;
     }
 

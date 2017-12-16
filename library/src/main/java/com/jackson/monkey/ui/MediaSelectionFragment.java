@@ -26,6 +26,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.jackson.monkey.CaptureType;
 import com.jackson.monkey.R;
 import com.jackson.monkey.entity.Album;
 import com.jackson.monkey.entity.MediaItem;
@@ -53,7 +54,7 @@ public class MediaSelectionFragment extends Fragment implements
     private AlbumMediaAdapter.OnMediaClickListener mOnMediaClickListener;
 
     private Album mAlbum;
-    private SelectionSpec mSelectionSpec;
+    private SelectionSpec mSpec;
 
     private boolean mCaptureLater = false;
 
@@ -99,26 +100,27 @@ public class MediaSelectionFragment extends Fragment implements
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mAlbum = getArguments().getParcelable(EXTRA_ALBUM);
-        mSelectionSpec = SelectionSpec.getInstance();
+        mSpec = SelectionSpec.getInstance();
 
         mAdapter = new AlbumMediaAdapter(getContext(),
-                mSelectionProvider.provideSelectedItemCollection(), mRecyclerView, mSelectionSpec.selectedUris);
+                mSelectionProvider.provideSelectedItemCollection(), mRecyclerView, mSpec.selectedUris);
         mAdapter.registerCheckStateListener(this);
         mAdapter.registerOnMediaClickListener(this);
         mRecyclerView.setHasFixedSize(true);
 
         int spanCount;
-        if (mSelectionSpec.gridExpectedSize > 0) {
-            spanCount = UIUtils.spanCount(getContext(), mSelectionSpec.gridExpectedSize);
+        if (mSpec.gridExpectedSize > 0) {
+            spanCount = UIUtils.spanCount(getContext(), mSpec.gridExpectedSize);
         } else {
-            spanCount = mSelectionSpec.spanCount;
+            spanCount = mSpec.spanCount;
             mRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), spanCount));
 
             int spacing = getResources().getDimensionPixelSize(R.dimen.media_grid_spacing);
             //mRecyclerView.addItemDecoration(new MediaGridInset(spanCount, spacing, false));
             mRecyclerView.setAdapter(mAdapter);
             mAlbumMediaCollection.onCreate(getActivity(), this);
-            mAlbumMediaCollection.load(mAlbum, mSelectionSpec.capture,mSelectionSpec.record);
+            mAlbumMediaCollection.load(mAlbum, mSpec.captureType == CaptureType.Image,
+                    mSpec.captureType == CaptureType.Video);
         }
     }
 

@@ -21,11 +21,13 @@ import android.net.Uri;
 import android.support.annotation.StyleRes;
 
 
+import com.jackson.monkey.CaptureType;
 import com.jackson.monkey.MimeType;
 import com.jackson.monkey.R;
 import com.jackson.monkey.engine.ImageEngine;
 import com.jackson.monkey.engine.impl.GlideEngine;
 import com.jackson.monkey.filter.Filter;
+import com.jackson.monkey.utils.MediaStoreCompat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,10 +44,9 @@ public final class SelectionSpec {
     public boolean countable;
     public int maxSelectable;
     public List<Filter> filters;
-    public boolean capture;
-    //是否可以录制
-    public boolean record;
+
     public CaptureStrategy captureStrategy;
+    public CaptureType captureType;
     public int spanCount;
     public int gridExpectedSize;
     public float thumbnailScale;
@@ -55,17 +56,9 @@ public final class SelectionSpec {
     public final List<Uri> extraUrisList = new ArrayList<>();
     public String extraUriClickToastMsg = "this is selected uri click toast msg";
 
-    /**
-     * 传入的Uri用来做什么。
-     *
-     */
-    public enum SelectedUrisPurpose{
-        //勾选传入的Uri
-        Checked,
-        //当点击这个对应Uri的Item时候，弹出吐司
-        Toast,
-    }
+
     private SelectionSpec() {
+
     }
 
     public static SelectionSpec getInstance() {
@@ -91,8 +84,7 @@ public final class SelectionSpec {
         countable = false;
         maxSelectable = 1;
         filters = null;
-        capture = false;
-        record = false;
+        captureType = null;
         captureStrategy = null;
         spanCount = 3;
         gridExpectedSize = 0;
@@ -122,5 +114,13 @@ public final class SelectionSpec {
 
     private static final class InstanceHolder {
         private static final SelectionSpec INSTANCE = new SelectionSpec();
+    }
+
+    /**
+     * 是否可以录制或者拍照
+     * @return
+     */
+    public boolean isCapture() {
+        return captureStrategy != null;
     }
 }
