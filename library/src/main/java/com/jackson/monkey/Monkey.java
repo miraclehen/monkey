@@ -30,50 +30,50 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Entry for Matisse's media selection.
+ * Entry for Monkey's media selection.
  */
-public final class Matisse {
+public final class Monkey {
 
     private final WeakReference<Activity> mContext;
     private final WeakReference<Fragment> mFragment;
 
-    private Matisse(Activity activity) {
+    private Monkey(Activity activity) {
         this(activity, null);
     }
 
-    private Matisse(Fragment fragment) {
+    private Monkey(Fragment fragment) {
         this(fragment.getActivity(), fragment);
     }
 
-    private Matisse(Activity activity, Fragment fragment) {
+    private Monkey(Activity activity, Fragment fragment) {
         mContext = new WeakReference<>(activity);
         mFragment = new WeakReference<>(fragment);
     }
 
     /**
-     * Start Matisse from an Activity.
+     * Start Monkey from an Activity.
      * <p>
      * This Activity's {@link Activity#onActivityResult(int, int, Intent)} will be called when user
      * finishes selecting.
      *
      * @param activity Activity instance.
-     * @return Matisse instance.
+     * @return Monkey instance.
      */
-    public static Matisse from(Activity activity) {
-        return new Matisse(activity);
+    public static Monkey from(Activity activity) {
+        return new Monkey(activity);
     }
 
     /**
-     * Start Matisse from a Fragment.
+     * Start Monkey from a Fragment.
      * <p>
      * This Fragment's {@link Fragment#onActivityResult(int, int, Intent)} will be called when user
      * finishes selecting.
      *
      * @param fragment Fragment instance.
-     * @return Matisse instance.
+     * @return Monkey instance.
      */
-    public static Matisse from(Fragment fragment) {
-        return new Matisse(fragment);
+    public static Monkey from(Fragment fragment) {
+        return new Monkey(fragment);
     }
 
     /**

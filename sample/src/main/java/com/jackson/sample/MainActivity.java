@@ -13,7 +13,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.jackson.monkey.CaptureType;
-import com.jackson.monkey.Matisse;
+import com.jackson.monkey.Monkey;
 import com.jackson.monkey.MatisseActivity;
 import com.jackson.monkey.MimeType;
 import com.jackson.monkey.engine.impl.GlideEngine;
@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(final View v) {
         switch (v.getId()) {
             case R.id.zhihu:
-                Matisse.from(MainActivity.this)
+                Monkey.from(MainActivity.this)
                         .choose(MimeType.ofAll(), false)
                         .countable(true)
                         .spanCount(4)
@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         .forResult(REQUEST_CODE_CHOOSE);
                 break;
             case R.id.dracula:
-                Matisse.from(MainActivity.this)
+                Monkey.from(MainActivity.this)
                         .choose(MimeType.ofVideo())
                         .showSingleMediaType(true)
                         .theme(R.style.Matisse_Dracula)
