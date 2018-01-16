@@ -17,5 +17,5 @@
 <paths>
     <external-path
         name="my_images"
-        path="Android/data/com.jackson.monkey/files/Pictures"/>
+        path="Android/data/com.miraclehen.monkey/files/Pictures"/>
 </paths>

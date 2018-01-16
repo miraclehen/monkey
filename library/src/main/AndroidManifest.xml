@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.jackson.monkey">
+    package="com.miraclehen.monkey">
 
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
@@ -8,7 +8,12 @@
 
     <application>
         <activity android:name=".MatisseActivity"
-            android:theme="@android:style/Theme.Translucent"/>
+            android:theme="@android:style/Theme.Translucent">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_MOUNTED" />
+                <data android:scheme="file" />
+            </intent-filter>
+        </activity>
         <activity android:name=".ui.AlbumPreviewActivity"/>
         <activity android:name=".ui.SelectedPreviewActivity"/>
     </application>
