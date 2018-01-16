@@ -150,8 +150,6 @@ public class MediaSelectionFragment extends Fragment implements
                 } while (cursor.moveToNext());
             }
         } else {
-
-
             cursor.moveToPosition(-1);
             processData(cursor);
             cursor.moveToPosition(-1);

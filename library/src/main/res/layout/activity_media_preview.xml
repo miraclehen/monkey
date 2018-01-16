@@ -18,7 +18,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.miraclehen.monkey.ui.widget.FixViewPager
+    <com.miraclehen.monkey.ui.widget.PreviewViewPager
         android:id="@+id/pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -37,9 +37,9 @@
             android:id="@+id/button_back"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="start"
             android:foreground="?selectableItemBackground"
             android:padding="16dp"
+            android:layout_gravity="start"
             android:text="@string/button_back"
             android:textColor="?attr/preview.bottomToolbar.back.textColor"
             android:textSize="16sp" />

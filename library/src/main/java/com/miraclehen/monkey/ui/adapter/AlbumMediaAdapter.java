@@ -384,6 +384,12 @@ public class AlbumMediaAdapter extends
         }
     }
 
+    /**
+     * 当item小图被点击
+     * @param thumbnail
+     * @param item
+     * @param holder
+     */
     @Override
     public void onThumbnailClicked(ImageView thumbnail, MediaItem item, RecyclerView.ViewHolder holder) {
         if (mOnMediaClickListener != null) {
@@ -391,6 +397,12 @@ public class AlbumMediaAdapter extends
         }
     }
 
+    /**
+     * 当勾选checkView被点击
+     * @param checkView
+     * @param item
+     * @param holder
+     */
     @Override
     public void onCheckViewClicked(CheckView checkView, MediaItem item, RecyclerView.ViewHolder holder) {
 
@@ -558,6 +570,9 @@ public class AlbumMediaAdapter extends
         void onUpdate();
     }
 
+    /**
+     * 当小图被点击
+     */
     public interface OnMediaClickListener {
         void onMediaClick(Album album, MediaItem item, int adapterPosition);
     }

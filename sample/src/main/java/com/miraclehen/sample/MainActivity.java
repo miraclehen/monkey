@@ -1,7 +1,6 @@
 package com.miraclehen.sample;
 
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -55,16 +54,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(final View v) {
         switch (v.getId()) {
             case R.id.zhihu:
+//                Matisse.from(MainActivity.this)
+//                        .choose(MimeType.ofImage(), false)
+//                        .countable(true)
+//                        .spanCount(4)
+//                        .captureStrategy(new CaptureStrategy(true, "com.jackson.sample.fileprovider"))
+//                        .maxSelectable(9)
+//                        .groupByDate(true)
+//                        .capture(true)
+////                        .selectedUris(getUri())
+//                        .restrictOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
+//                        .thumbnailScale(0.85f)
+//                        .imageEngine(new GlideEngine())
+//                        .forResult(REQUEST_CODE_CHOOSE);
+
                 Matisse.from(MainActivity.this)
-                        .choose(MimeType.ofImage(), false)
-                        .countable(true)
+                        .choose(MimeType.ofImageExcludeGif(), false)
+                        .countable(false)
                         .spanCount(4)
-                        .captureStrategy(new CaptureStrategy(true, "com.jackson.sample.fileprovider"))
-                        .maxSelectable(9)
-                        .groupByDate(true)
                         .capture(true)
-//                        .selectedUris(getUri())
-                        .restrictOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
+                        .captureStrategy(new CaptureStrategy(true, "com.jackson.sample.fileprovider"))
+                        .maxSelectable(20)
+                        .groupByDate(true)
+                        .showSingleMediaType(true)
                         .thumbnailScale(0.85f)
                         .imageEngine(new GlideEngine())
                         .forResult(REQUEST_CODE_CHOOSE);
