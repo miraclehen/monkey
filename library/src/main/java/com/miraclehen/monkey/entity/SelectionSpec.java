@@ -19,6 +19,7 @@ package com.miraclehen.monkey.entity;
 import android.content.pm.ActivityInfo;
 import android.support.annotation.StyleRes;
 
+import com.miraclehen.monkey.CaptureType;
 import com.miraclehen.monkey.MimeType;
 import com.miraclehen.monkey.R;
 import com.miraclehen.monkey.engine.ImageEngine;
@@ -44,10 +45,18 @@ public final class SelectionSpec {
     public boolean countable;
     public int maxSelectable;
     public List<Filter> filters;
-    public boolean capture;
-    //是否可以录制
-    public boolean record;
+    /**
+     * 拍摄类型，包括照片，视频，或者都不
+     */
+    public CaptureType captureType;
+    /**
+     * 拍摄策略
+     */
     public CaptureStrategy captureStrategy;
+    /**
+     * 拍摄后是否直接退出Monkey
+     */
+    public boolean finishBack;
     public int spanCount;
     public int gridExpectedSize;
     public float thumbnailScale;
@@ -92,9 +101,9 @@ public final class SelectionSpec {
         countable = false;
         maxSelectable = 1;
         filters = null;
-        capture = false;
-        record = false;
+        captureType = CaptureType.None;
         captureStrategy = null;
+        finishBack = false;
         spanCount = 3;
         gridExpectedSize = 0;
         thumbnailScale = 0.5f;
@@ -137,6 +146,6 @@ public final class SelectionSpec {
      * @return
      */
     public boolean isCapture() {
-        return captureStrategy != null;
+        return captureType != CaptureType.None;
     }
 }

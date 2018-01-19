@@ -55,6 +55,7 @@ import com.miraclehen.monkey.model.AlbumCollection;
 import com.miraclehen.monkey.model.SelectedItemCollection;
 import com.miraclehen.monkey.ui.AlbumPreviewActivity;
 import com.miraclehen.monkey.ui.BasePreviewActivity;
+import com.miraclehen.monkey.ui.LoadingDialog;
 import com.miraclehen.monkey.ui.MediaSelectionFragment;
 import com.miraclehen.monkey.ui.PermissionExplainDialog;
 import com.miraclehen.monkey.ui.SelectedPreviewActivity;
@@ -75,8 +76,8 @@ import io.reactivex.functions.Consumer;
 public class MatisseActivity extends AppCompatActivity implements
         AlbumCollection.AlbumCallbacks, AdapterView.OnItemSelectedListener,
         MediaSelectionFragment.SelectionProvider, View.OnClickListener,
-        AlbumMediaAdapter.CheckStateListener, AlbumMediaAdapter.OnMediaClickListener,
-        AlbumMediaAdapter.OnPhotoCapture {
+        UICallback.CheckStateListener, UICallback.OnMediaClickListener,
+        AlbumMediaAdapter.OnPhotoCapture, UICallback.LoadingDialogCallback {
 
     public static final String TAG = MatisseActivity.class.getSimpleName();
 
@@ -109,6 +110,8 @@ public class MatisseActivity extends AppCompatActivity implements
     private FrameLayout mToolbarWrapperLayout;
     private TextView mAnchorView;
 
+    private LoadingDialog mLoadingDialog;
+
     private OnScanCompletedListenerImpl mOnScanCompletedCallback;
 
     @Override
@@ -126,7 +129,7 @@ public class MatisseActivity extends AppCompatActivity implements
             setRequestedOrientation(mSpec.orientation);
         }
 
-        if (mSpec.capture || mSpec.record) {
+        if (mSpec.isCapture()) {
             mMediaStoreCompat = new MediaStoreCompat(this);
             if (mSpec.captureStrategy == null) {
                 throw new RuntimeException("Don't forget to set CaptureStrategy.");
@@ -228,6 +231,7 @@ public class MatisseActivity extends AppCompatActivity implements
             mOnScanCompletedCallback.clearCallback();
         }
         mOnScanCompletedCallback = null;
+        mSpec.checkListener = null;
         super.onDestroy();
         mAlbumCollection.onDestroy();
     }
@@ -276,6 +280,7 @@ public class MatisseActivity extends AppCompatActivity implements
                 updateBottomToolbar();
             }
         } else if (requestCode == REQUEST_CODE_CAPTURE || requestCode == REQUEST_CODE_VIDEO) {
+//            showDialog();
             //拍完照或者录制视频之后
             //文件的路径
             final String path = mMediaStoreCompat.getCurrentPhotoPath();
@@ -299,19 +304,42 @@ public class MatisseActivity extends AppCompatActivity implements
             mOnScanCompletedCallback = new OnScanCompletedListenerImpl(new Consumer<String>() {
                 @Override
                 public void accept(String s) throws Exception {
-                    reloadCaptureLoader();
+                    //重新加载并且处理拍摄的数据
+                    loadAndProcessCaptureLoader(path);
                 }
             });
             MediaScannerConnection.scanFile(getApplicationContext(), new String[]{path}, null, mOnScanCompletedCallback);
         }
     }
 
-    private void reloadCaptureLoader() {
+    /**
+     * 重新加载并且处理拍摄的数据
+     */
+    private void loadAndProcessCaptureLoader(String capturePath) {
         MediaSelectionFragment mediaSelectionFragment = (MediaSelectionFragment) getSupportFragmentManager()
-                .findFragmentByTag(
-                        MediaSelectionFragment.class.getSimpleName());
+                .findFragmentByTag(MediaSelectionFragment.class.getSimpleName());
         if (mediaSelectionFragment != null) {
-            mediaSelectionFragment.captureLater(captureLaterCallback);
+            mediaSelectionFragment.reloadForCapture(mSpec.finishBack ? captureLaterCallback : null,capturePath);
+        }
+    }
+
+    /**
+     * 显示加载中对话框
+     */
+    @Override
+    public void showDialog() {
+        if (mLoadingDialog == null) {
+            mLoadingDialog = new LoadingDialog();
+        }
+        mLoadingDialog.show(getSupportFragmentManager(), LoadingDialog.class.getSimpleName());
+    }
+
+    /**
+     * 加载中对话框消失
+     */
+    public void dismissDialog() {
+        if (mLoadingDialog != null) {
+            mLoadingDialog.dismiss();
         }
     }
 
@@ -370,7 +398,7 @@ public class MatisseActivity extends AppCompatActivity implements
         mAlbumCollection.setStateCurrentSelection(position);
         mAlbumsAdapter.getCursor().moveToPosition(position);
         Album album = Album.valueOf(mAlbumsAdapter.getCursor());
-        if (album.isAll() && SelectionSpec.getInstance().capture) {
+        if (album.isAll() && SelectionSpec.getInstance().isCapture()) {
             album.addCaptureCount();
         }
         onAlbumSelected(album);
@@ -402,7 +430,7 @@ public class MatisseActivity extends AppCompatActivity implements
                 mAlbumsSpinner.setSelection(MatisseActivity.this,
                         mAlbumCollection.getCurrentSelection());
                 mCurrentAlbum = Album.valueOf(cursor);
-                if (mCurrentAlbum.isAll() && SelectionSpec.getInstance().capture) {
+                if (mCurrentAlbum.isAll() && SelectionSpec.getInstance().isCapture()) {
                     mCurrentAlbum.addCaptureCount();
                 }
                 onAlbumSelected(mCurrentAlbum);
@@ -422,7 +450,7 @@ public class MatisseActivity extends AppCompatActivity implements
      */
     private void onAlbumSelected(Album album) {
         //修复不能拍摄
-        if (album.isAll() && album.isEmpty() && !mSpec.capture && !mSpec.record) {
+        if (album.isAll() && album.isEmpty() && !mSpec.isCapture()) {
             mContainer.setVisibility(View.GONE);
             mEmptyView.setVisibility(View.VISIBLE);
         } else {
@@ -486,7 +514,6 @@ public class MatisseActivity extends AppCompatActivity implements
         } else {
             requestWriteStoragePermission(MediaStoreCompat.CaptureType.Image);
         }
-
     }
 
     /**
@@ -619,7 +646,7 @@ public class MatisseActivity extends AppCompatActivity implements
             //请求相机权限
             if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 if (mSpec.isCapture()) {
-                    if (mSpec.capture) {
+                    if (mSpec.isCapture()) {
                         mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_CAPTURE, MediaStoreCompat.CaptureType.Image);
                     } else {
                         mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_VIDEO, MediaStoreCompat.CaptureType.Video);

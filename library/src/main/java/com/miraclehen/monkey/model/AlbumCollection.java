@@ -102,6 +102,10 @@ public class AlbumCollection implements LoaderManager.LoaderCallbacks<Cursor> {
         mLoaderManager.initLoader(LOADER_ID, null, this);
     }
 
+    public void reloadAlbums(){
+        mLoaderManager.restartLoader(LOADER_ID, null, this);
+    }
+
     public void loadCapture(Bundle args) {
         mLoaderManager.initLoader(LOADER_ID_FOR_CAPTURE, args, this);
     }

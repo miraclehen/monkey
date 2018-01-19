@@ -30,6 +30,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.miraclehen.monkey.R;
+import com.miraclehen.monkey.UICallback;
 import com.miraclehen.monkey.entity.Album;
 import com.miraclehen.monkey.entity.IncapableCause;
 import com.miraclehen.monkey.entity.MediaItem;
@@ -67,15 +68,15 @@ public class AlbumMediaAdapter extends
     private final Drawable mPlaceholder;
     //外部可选配置
     private SelectionSpec mSelectionSpec;
-    private CheckStateListener mCheckStateListener;
-    private OnMediaClickListener mOnMediaClickListener;
+    private UICallback.CheckStateListener mCheckStateListener;
+    private UICallback.OnMediaClickListener mOnMediaClickListener;
     private RecyclerView mRecyclerView;
     private int mImageResize;
     private int mDateCount = 0;
     private Context mContext;
 
     private HashMap<Long, Integer> mDateWithPosMap = new HashMap<>();
-    private List<Long> mDateList = new ArrayList<>();
+    private ArrayList<Long> mDateList = new ArrayList<>();
 
     private List<CursorBean> mCursorBeanList = new ArrayList<>();
 
@@ -133,7 +134,7 @@ public class AlbumMediaAdapter extends
         //排序
         Long[] dateArray = mDateWithPosMap.keySet().toArray(new Long[0]);
 
-        mDateList = Arrays.asList(dateArray);
+        mDateList.addAll(Arrays.asList(dateArray));
         Collections.sort(mDateList, new Comparator<Long>() {
             @Override
             public int compare(Long o1, Long o2) {
@@ -184,7 +185,7 @@ public class AlbumMediaAdapter extends
      * 后期可以重写这个方法
      */
     private void invokeCatchSpecCallback(List<CursorBean> dataList, int position, CatchSpePositionCallback callback) {
-        if (mSelectionSpec.capture) {
+        if (mSelectionSpec.isCapture()) {
             //跳过的日期视图和拍摄视图
             position = 2;
             if (dataList.size() == 2) {
@@ -545,11 +546,11 @@ public class AlbumMediaAdapter extends
         return cause == null;
     }
 
-    public void registerCheckStateListener(CheckStateListener listener) {
+    public void registerCheckStateListener(UICallback.CheckStateListener listener) {
         mCheckStateListener = listener;
     }
 
-    public void registerOnMediaClickListener(OnMediaClickListener listener) {
+    public void registerOnMediaClickListener(UICallback.OnMediaClickListener listener) {
         mOnMediaClickListener = listener;
     }
 
@@ -564,17 +565,6 @@ public class AlbumMediaAdapter extends
             mImageResize = (int) (mImageResize * mSelectionSpec.thumbnailScale);
         }
         return mImageResize;
-    }
-
-    public interface CheckStateListener {
-        void onUpdate();
-    }
-
-    /**
-     * 当小图被点击
-     */
-    public interface OnMediaClickListener {
-        void onMediaClick(Album album, MediaItem item, int adapterPosition);
     }
 
     public interface OnPhotoCapture {

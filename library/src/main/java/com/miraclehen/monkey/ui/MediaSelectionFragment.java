@@ -23,12 +23,15 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.miraclehen.monkey.R;
+import com.miraclehen.monkey.UICallback;
 import com.miraclehen.monkey.entity.Album;
+import com.miraclehen.monkey.entity.IncapableCause;
 import com.miraclehen.monkey.entity.MediaItem;
 import com.miraclehen.monkey.entity.SelectionSpec;
 import com.miraclehen.monkey.model.AlbumMediaCollection;
@@ -40,8 +43,8 @@ import com.miraclehen.monkey.ui.adapter.AlbumMediaAdapter;
  * 一本相册的内容
  */
 public class MediaSelectionFragment extends Fragment implements
-        AlbumMediaCollection.AlbumMediaCallbacks, AlbumMediaAdapter.CheckStateListener,
-        AlbumMediaAdapter.OnMediaClickListener {
+        AlbumMediaCollection.AlbumMediaCallbacks, UICallback.CheckStateListener,
+        UICallback.OnMediaClickListener {
 
     public static final String EXTRA_ALBUM = "extra_album";
 
@@ -49,14 +52,30 @@ public class MediaSelectionFragment extends Fragment implements
     private RecyclerView mRecyclerView;
     private AlbumMediaAdapter mAdapter;
     private SelectionProvider mSelectionProvider;
-    private AlbumMediaAdapter.CheckStateListener mCheckStateListener;
-    private AlbumMediaAdapter.OnMediaClickListener mOnMediaClickListener;
+
+    private UICallback.CheckStateListener mCheckStateListener;
+    private UICallback.OnMediaClickListener mOnMediaClickListener;
+    private UICallback.LoadingDialogCallback mLoadingDialogCallback;
 
     private Album mAlbum;
     private SelectionSpec mSelectionSpec;
     private SelectedItemCollection mSelectedItemCollection;
 
-    private boolean mCaptureLater = false;
+    /**
+     * 拍摄之后的回调
+     * 仅当你SelectionSpec.finishBack = true时候，才会执行
+     */
+    private OnGetTargetMediaItemLaterCallback mCaptureLaterCallback;
+    /**
+     * 标志位
+     * 是否是拍摄之后的重新加载
+     */
+    private boolean isCaptureLater = false;
+
+    /**
+     * 拍摄的路径
+     */
+    private String mCapturePath;
 
     public static MediaSelectionFragment newInstance(Album album) {
         MediaSelectionFragment fragment = new MediaSelectionFragment();
@@ -74,11 +93,14 @@ public class MediaSelectionFragment extends Fragment implements
         } else {
             throw new IllegalStateException("Context must implement SelectionProvider.");
         }
-        if (context instanceof AlbumMediaAdapter.CheckStateListener) {
-            mCheckStateListener = (AlbumMediaAdapter.CheckStateListener) context;
+        if (context instanceof UICallback.CheckStateListener) {
+            mCheckStateListener = (UICallback.CheckStateListener) context;
         }
-        if (context instanceof AlbumMediaAdapter.OnMediaClickListener) {
-            mOnMediaClickListener = (AlbumMediaAdapter.OnMediaClickListener) context;
+        if (context instanceof UICallback.OnMediaClickListener) {
+            mOnMediaClickListener = (UICallback.OnMediaClickListener) context;
+        }
+        if (context instanceof UICallback.LoadingDialogCallback) {
+            mLoadingDialogCallback = (UICallback.LoadingDialogCallback) context;
         }
     }
 
@@ -113,7 +135,7 @@ public class MediaSelectionFragment extends Fragment implements
 
         mRecyclerView.setAdapter(mAdapter);
         mAlbumMediaCollection.onCreate(getActivity(), this);
-        mAlbumMediaCollection.load(mAlbum, mSelectionSpec.capture, mSelectionSpec.record);
+        mAlbumMediaCollection.load(mAlbum, mSelectionSpec.captureType);
 
     }
 
@@ -129,32 +151,84 @@ public class MediaSelectionFragment extends Fragment implements
 
     /**
      * 数据加载结束
+     * <p>
+     * mCaptureLaterCallback 不为空说明是拍摄回来，并且拍摄之后直接返回数据给client
      *
      * @param cursor
      */
     @Override
     public void onAlbumMediaLoad(Cursor cursor) {
-        if (mCaptureLater) {
-            //如果可以拍照或者视频
-            int existCount = 0;
-            if (mSelectionSpec.capture || mSelectionSpec.record) {
-                existCount = 1;
+        if (isCaptureLater) {
+            //拍摄之后回来的
+            //先获取到该条数据cursor
+            Cursor captureCursor = obtainCaptureCursor(cursor);
+            MediaItem mediaItem = MediaItem.valueOf(cursor);
+            if (mSelectionSpec.finishBack) {
+                //直接返回该图片或者视频数据
+                if (captureCursor != null) {
+                    mCaptureLaterCallback.later(mediaItem);
+                }
+                return;
+            }else {
+                //不直接返回，并且勾选此数据. 在页面上刷新
+                if (assertAddSelection(getContext(), mediaItem)) {
+                    mSelectedItemCollection.add(mediaItem);
+                    //更新底部工具栏个数
+                    onUpdate();
+                }
             }
-            if (cursor != null && cursor.getCount() > existCount) {
-                cursor.moveToPosition(existCount);
-                do {
-                    if (cursor.getLong(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATE_TAKEN)) != 0) {
-                        laterCallback.later(MediaItem.valueOf(cursor));
-                        break;
-                    }
-                } while (cursor.moveToNext());
-            }
-        } else {
-            cursor.moveToPosition(-1);
-            processData(cursor);
-            cursor.moveToPosition(-1);
-            mAdapter.swapCursor(cursor);
+            //消费掉此事件
+            consumeCaptureEvent();
         }
+
+        cursor.moveToPosition(-1);
+        processData(cursor);
+        cursor.moveToPosition(-1);
+        mAdapter.swapCursor(cursor);
+
+    }
+
+    /**
+     * 是否能添加
+     * @param context
+     * @param item
+     * @return
+     */
+    private boolean assertAddSelection(Context context, MediaItem item) {
+        IncapableCause cause = mSelectedItemCollection.isAcceptable(item);
+        IncapableCause.handleCause(context, cause);
+        return cause == null;
+    }
+
+    /**
+     * 消费掉此次拍摄事件
+     */
+    private void consumeCaptureEvent(){
+        //给相关变量赋值
+        mCaptureLaterCallback = null;
+        mCapturePath = "";
+        isCaptureLater = false;
+    }
+
+    /**
+     * 获取到拍摄文件的cursor
+     *
+     * @return
+     */
+    private Cursor obtainCaptureCursor(Cursor cursor) {
+        if (!mAlbum.isAll() || !mSelectionSpec.isCapture() || TextUtils.isEmpty(mCapturePath.trim())) {
+            return null;
+        }
+        int existCount = 1;
+        if (cursor != null && cursor.getCount() > existCount) {
+            cursor.moveToPosition(existCount);
+            do {
+                if (mCapturePath.equals(cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA)))) {
+                    return cursor;
+                }
+            } while (cursor.moveToNext());
+        }
+        return null;
     }
 
 
@@ -183,10 +257,6 @@ public class MediaSelectionFragment extends Fragment implements
 
     @Override
     public void onAlbumMediaReset() {
-        if (mCaptureLater) {
-            mCaptureLater = false;
-            return;
-        }
         mAdapter.swapCursor(null);
     }
 
@@ -210,16 +280,23 @@ public class MediaSelectionFragment extends Fragment implements
         SelectedItemCollection provideSelectedItemCollection();
     }
 
-    public void captureLater(OnGetTargetMediaItemLaterCallback callback) {
-        mCaptureLater = true;
-        mAlbumMediaCollection.reloadForCapture(mAlbum, mSelectionSpec.capture, mSelectionSpec.record);
-        laterCallback = callback;
+    /**
+     * 拍摄之后的重新加载数据
+     * @param callback
+     * @param capturePath
+     */
+    public void reloadForCapture(OnGetTargetMediaItemLaterCallback callback, String capturePath) {
+        //重新加载数据
+        mAlbumMediaCollection.restart(mAlbum, mSelectionSpec.captureType);
 
+        //给相关变量赋值
+        mCaptureLaterCallback = callback;
+        mCapturePath = capturePath;
+        isCaptureLater = true;
     }
 
     public interface OnGetTargetMediaItemLaterCallback {
         void later(MediaItem mediaItem);
     }
 
-    private OnGetTargetMediaItemLaterCallback laterCallback;
 }

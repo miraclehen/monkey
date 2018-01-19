@@ -27,7 +27,7 @@ import com.squareup.picasso.Picasso;
  * {@link ImageEngine} implementation using Picasso.
  */
 
-public class PicassoEngine implements ImageEngine {
+public  class PicassoEngine implements ImageEngine {
 
     @Override
     public void loadThumbnail(Context context, int resize, Drawable placeholder, ImageView imageView, Uri uri) {
@@ -44,14 +44,14 @@ public class PicassoEngine implements ImageEngine {
     }
 
     @Override
-    public void loadImage(Context context, int resizeX, int resizeY, ImageView imageView, Uri uri) {
-        Picasso.with(context).load(uri).resize(resizeX, resizeY).priority(Picasso.Priority.HIGH)
+    public void loadImage(Context context, ImageView imageView, Uri uri) {
+        Picasso.with(context).load(uri).fit().priority(Picasso.Priority.HIGH)
                 .centerInside().into(imageView);
     }
 
     @Override
-    public void loadGifImage(Context context, int resizeX, int resizeY, ImageView imageView, Uri uri) {
-        loadImage(context, resizeX, resizeY, imageView, uri);
+    public void loadGifImage(Context context, ImageView imageView, Uri uri) {
+        loadImage(context, imageView, uri);
     }
 
     @Override

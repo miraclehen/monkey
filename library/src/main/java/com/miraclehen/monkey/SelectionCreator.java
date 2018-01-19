@@ -172,23 +172,6 @@ public final class SelectionCreator {
         return this;
     }
 
-    /**
-     * Determines whether the photo capturing is enabled or not on the media grid view.
-     * <p>
-     * If this value is set true, photo capturing entry will appear only on All Media's page.
-     *
-     * @param enable Whether to enable capturing or not. Default value is false;
-     * @return {@link SelectionCreator} for fluent API.
-     */
-    public SelectionCreator capture(boolean enable) {
-        mSelectionSpec.capture = enable;
-        return this;
-    }
-
-    public SelectionCreator record(boolean enable) {
-        mSelectionSpec.record = enable;
-        return this;
-    }
 
     /**
      * Capture strategy provided for the location to save photos including internal and external
@@ -199,6 +182,21 @@ public final class SelectionCreator {
      */
     public SelectionCreator captureStrategy(CaptureStrategy captureStrategy) {
         mSelectionSpec.captureStrategy = captureStrategy;
+        return this;
+    }
+
+    public SelectionCreator captureType(CaptureType captureType) {
+        mSelectionSpec.captureType = captureType;
+        return this;
+    }
+
+    /**
+     * 拍摄后是否直接结束返回
+     * @param finishBack
+     * @return
+     */
+    public SelectionCreator finishBack(boolean finishBack) {
+        mSelectionSpec.finishBack = finishBack;
         return this;
     }
 

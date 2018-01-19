@@ -11,11 +11,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.miraclehen.monkey.CaptureType;
 import com.miraclehen.monkey.Matisse;
 import com.miraclehen.monkey.MatisseActivity;
 import com.miraclehen.monkey.MimeType;
 import com.miraclehen.monkey.engine.impl.GlideEngine;
-import com.miraclehen.monkey.engine.impl.PicassoEngine;
 import com.miraclehen.monkey.entity.CaptureStrategy;
 import com.miraclehen.monkey.entity.MediaItem;
 
@@ -54,26 +54,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(final View v) {
         switch (v.getId()) {
             case R.id.zhihu:
-//                Matisse.from(MainActivity.this)
-//                        .choose(MimeType.ofImage(), false)
-//                        .countable(true)
-//                        .spanCount(4)
-//                        .captureStrategy(new CaptureStrategy(true, "com.jackson.sample.fileprovider"))
-//                        .maxSelectable(9)
-//                        .groupByDate(true)
-//                        .capture(true)
-////                        .selectedUris(getUri())
-//                        .restrictOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
-//                        .thumbnailScale(0.85f)
-//                        .imageEngine(new GlideEngine())
-//                        .forResult(REQUEST_CODE_CHOOSE);
-
                 Matisse.from(MainActivity.this)
                         .choose(MimeType.ofImageExcludeGif(), false)
                         .countable(false)
                         .spanCount(4)
-                        .capture(true)
-                        .captureStrategy(new CaptureStrategy(true, "com.jackson.sample.fileprovider"))
+                        .finishBack(false)
+                        .captureType(CaptureType.Image)
+                        .captureStrategy(new CaptureStrategy(true, "com.miraclehen.sample.fileprovider"))
                         .maxSelectable(20)
                         .groupByDate(true)
                         .showSingleMediaType(true)
@@ -83,16 +70,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.dracula:
                 Matisse.from(MainActivity.this)
-                        .choose(MimeType.ofVideo())
+                        .choose(MimeType.ofAll())
                         .showSingleMediaType(true)
-                        .theme(R.style.Matisse_Dracula)
-                        .captureStrategy(new CaptureStrategy(true, "com.jackson.sample.fileprovider"))
+                        .theme(R.style.Matisse_Zhihu)
+                        .captureStrategy(new CaptureStrategy(true, "com.miraclehen.sample.fileprovider"))
                         .countable(false)
+                        .captureType(CaptureType.Video)
                         .spanCount(4)
                         .groupByDate(true)
                         .maxSelectable(9)
-                        .record(true)
-                        .imageEngine(new PicassoEngine())
+                        .imageEngine(new GlideEngine())
                         .forResult(REQUEST_CODE_CHOOSE);
                 break;
         }
@@ -137,10 +124,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         public void onBindViewHolder(UriViewHolder holder, int position) {
             MediaItem item = mDataList.get(position);
             holder.mUri.setText("uri: " + item.getContentUri().toString());
-//            holder.mPath.setText("path: " + item.getPath().toString());
+            holder.mPath.setText("path: " + item.getOriginalPath().toString());
             holder.mLat.setText("纬度: " + String.valueOf(item.getLatitude()));
             holder.mLong.setText("经度:" + String.valueOf(item.getLongitude()));
-//            holder.mSize.setText("大小:" + String.valueOf(item.getSize()));
+            holder.mSize.setText("大小:" + String.valueOf(item.getLength()));
             holder.mDuration.setText("时长:" + String.valueOf(item.getDuration()));
             holder.mWidth.setText("宽度:" + String.valueOf(item.getWidth()));
             holder.mHeight.setText("高度:" + String.valueOf(item.getHeight()));
