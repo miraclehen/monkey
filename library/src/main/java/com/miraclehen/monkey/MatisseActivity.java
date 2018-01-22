@@ -29,7 +29,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
@@ -227,8 +226,13 @@ public class MatisseActivity extends AppCompatActivity implements
         }
         mOnScanCompletedCallback = null;
         mSpec.checkListener = null;
-        super.onDestroy();
-        mAlbumCollection.onDestroy();
+        try {
+            mAlbumCollection.onDestroy();
+            super.onDestroy();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
     }
 
     @Override
@@ -281,13 +285,13 @@ public class MatisseActivity extends AppCompatActivity implements
             File file = new File(path);
             //文件的Uri
             Uri contentUri = Uri.fromFile(file);
-            // 其次把文件插入到系统图库
-            try {
-                MediaStore.Images.Media.insertImage(getContentResolver(),
-                        file.getAbsolutePath(), file.getName(), null);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+//            // 其次把文件插入到系统图库
+//            try {
+//                MediaStore.Images.Media.insertImage(getContentResolver(),
+//                        file.getAbsolutePath(), file.getName(), null);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
 
             //拍完照或者录制视频之后
             //通知数据库更新，不然无法显示刚刚拍摄的文件

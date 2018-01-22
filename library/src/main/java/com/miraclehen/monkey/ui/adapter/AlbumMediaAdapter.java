@@ -106,14 +106,15 @@ public class AlbumMediaAdapter extends
 
     @Override
     public void swapCursor(Cursor newCursor) {
-        super.swapCursor(newCursor);
         isProcessData = false;
+        super.swapCursor(newCursor);
     }
 
     private void processData(Cursor newCursor) {
         //日期与cursor的位置
         mDateWithPosMap.clear();
         mDateList.clear();
+        mCursorBeanList.clear();
 
         if (newCursor == null || newCursor.getCount() == 0) {
             return;
