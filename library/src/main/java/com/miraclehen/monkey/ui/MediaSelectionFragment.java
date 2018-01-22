@@ -60,7 +60,7 @@ public class MediaSelectionFragment extends Fragment implements
 
     /**
      * 拍摄之后的回调
-     * 仅当你SelectionSpec.finishBack = true时候，才会执行
+     * 仅当你SelectionSpec.captureFinishBack = true时候，才会执行
      */
     private OnGetTargetMediaItemLaterCallback mCaptureLaterCallback;
     /**
@@ -153,7 +153,7 @@ public class MediaSelectionFragment extends Fragment implements
             //先获取到该条数据cursor
             Cursor captureCursor = obtainCaptureCursor(cursor);
             MediaItem mediaItem = MediaItem.valueOf(cursor);
-            if (mSelectionSpec.finishBack) {
+            if (mSelectionSpec.captureFinishBack) {
                 //直接返回该图片或者视频数据
                 if (captureCursor != null) {
                     mCaptureLaterCallback.later(mediaItem);

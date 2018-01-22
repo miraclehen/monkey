@@ -56,8 +56,6 @@ public class MediaItem implements Parcelable {
     private long modifiedDate;
     //文件夹相关
     private String bucketId;
-    //是否已经上传过.-1为还没确定。0为还没上传过，1为上传过
-    private int mUploaded = -1;
     //是否已被选中
     private boolean isChecked = true;
 
@@ -347,14 +345,6 @@ public class MediaItem implements Parcelable {
         this.bucketId = bucketId;
     }
 
-    public int getUploaded() {
-        return mUploaded;
-    }
-
-    public void setUploaded(int uploaded) {
-        this.mUploaded = uploaded;
-    }
-
     public boolean isChecked() {
         return isChecked;
     }
@@ -386,7 +376,6 @@ public class MediaItem implements Parcelable {
         dest.writeString(this.thumbnailSmallPath);
         dest.writeLong(this.modifiedDate);
         dest.writeString(this.bucketId);
-        dest.writeInt(this.mUploaded);
         dest.writeByte(this.isChecked ? (byte) 1 : (byte) 0);
     }
 
@@ -407,7 +396,6 @@ public class MediaItem implements Parcelable {
         this.thumbnailSmallPath = in.readString();
         this.modifiedDate = in.readLong();
         this.bucketId = in.readString();
-        this.mUploaded = in.readInt();
         this.isChecked = in.readByte() != 0;
     }
 
@@ -422,4 +410,27 @@ public class MediaItem implements Parcelable {
             return new MediaItem[size];
         }
     };
+
+    @Override
+    public String toString() {
+        return "MediaItem{" +
+                "id=" + id +
+                ", mimeType='" + mimeType + '\'' +
+                ", uri=" + uri +
+                ", length=" + length +
+                ", duration=" + duration +
+                ", latitude=" + latitude +
+                ", longitude=" + longitude +
+                ", createDate=" + createDate +
+                ", addDate=" + addDate +
+                ", width=" + width +
+                ", height=" + height +
+                ", originalPath='" + originalPath + '\'' +
+                ", thumbnailBigPath='" + thumbnailBigPath + '\'' +
+                ", thumbnailSmallPath='" + thumbnailSmallPath + '\'' +
+                ", modifiedDate=" + modifiedDate +
+                ", bucketId='" + bucketId + '\'' +
+                ", isChecked=" + isChecked +
+                '}';
+    }
 }

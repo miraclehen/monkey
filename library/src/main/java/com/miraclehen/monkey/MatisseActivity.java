@@ -313,7 +313,7 @@ public class MatisseActivity extends AppCompatActivity implements
         MediaSelectionFragment mediaSelectionFragment = (MediaSelectionFragment) getSupportFragmentManager()
                 .findFragmentByTag(MediaSelectionFragment.class.getSimpleName());
         if (mediaSelectionFragment != null) {
-            mediaSelectionFragment.reloadForCapture(mSpec.finishBack ? captureLaterCallback : null, capturePath);
+            mediaSelectionFragment.reloadForCapture(mSpec.captureFinishBack ? captureLaterCallback : null, capturePath);
         }
     }
 

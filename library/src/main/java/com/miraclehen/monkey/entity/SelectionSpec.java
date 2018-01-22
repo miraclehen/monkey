@@ -25,59 +25,121 @@ import com.miraclehen.monkey.R;
 import com.miraclehen.monkey.engine.ImageEngine;
 import com.miraclehen.monkey.engine.impl.GlideEngine;
 import com.miraclehen.monkey.filter.Filter;
-import com.miraclehen.monkey.listener.CatchSpePositionCallback;
-import com.miraclehen.monkey.listener.OnExtraFileCheckListener;
+import com.miraclehen.monkey.listener.CatchSpecMediaItemCallback;
+import com.miraclehen.monkey.listener.OnItemCheckChangeListener;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
+/**
+ * 选择偏好
+ */
 public final class SelectionSpec {
 
+    /**
+     * 数据MimeType集合
+     */
     public Set<MimeType> mimeTypeSet;
+
+    /**
+     * 当数据资源为视频和图片混合时候，是否能同时选中它们
+     */
     public boolean mediaTypeExclusive;
-    public boolean showSingleMediaType;
+
+    /**
+     * 主题资源id
+     */
     @StyleRes
     public int themeId;
+
+    /**
+     * 显示数据屏幕方向
+     */
     public int orientation;
+
+    /**
+     * 是否可数
+     */
     public boolean countable;
+
+    /**
+     * 最大可选中数量
+     */
     public int maxSelectable;
+
+    /**
+     * 数据过滤器
+     */
     public List<Filter> filters;
+
     /**
      * 拍摄类型，包括照片，视频，或者都不
      */
     public CaptureType captureType;
+
     /**
      * 拍摄策略
      */
     public CaptureStrategy captureStrategy;
+
     /**
      * 拍摄后是否直接退出Monkey
      */
-    public boolean finishBack;
-    public int spanCount;
-    public int gridExpectedSize;
+    public boolean captureFinishBack;
+
+    /**
+     * 缩略图缩放比例
+     */
     public float thumbnailScale;
+
+    /**
+     * 图片加载引擎
+     */
     public ImageEngine imageEngine;
+
+    /**
+     * 是否支持日期分组
+     */
     public boolean groupByDate;
 
+    /**
+     * 一行的数量
+     */
+    public int spanCount;
+
+    /**
+     * 是否启动单一结果模式。
+     * 如果为true，那么当选择其中一个item适合，直接结束选择。
+     * 当为true的时候，{@link #captureFinishBack}将为被设置为true，也就是拍照之后直接返回数据，不停留在MatisseActivity
+     */
     public boolean singleResultModel;
+
+    //======待修改
     public int toolbarLayoutId;
     public int backViewId;
     public int anchorViewId;
 
-    //获取指定位置的MediaItem数据
-    public int catchSpecPosition = -1;
-    public CatchSpePositionCallback catchSpecPositionCallback;
-    //已选中的MediaItem
-//    public final List<String> selectedPathList = new ArrayList<>();
-//    public final Map<Integer, Boolean> selectedPathMap = new HashMap<>();
+    /**
+     * 已选中的MediaItem
+     */
     public final List<MediaItem> selectedDataList = new ArrayList<>();
-    //额额外的MediaItem数据。当点击这些Item时候。会触发checkListener
-    public OnExtraFileCheckListener checkListener;
-    public final Map<Long, Long> extraIdMap = new HashMap<>();
+
+    /**
+     * 当某个Item被勾选或者取消勾选
+     */
+    public OnItemCheckChangeListener checkListener;
+
+    /**
+     * 获取指定日期区间的数据MediaItem之后回调相应的方法
+     */
+    public CatchSpecMediaItemCallback.dateCallback catchDateSpecCallback;
+
+    /**
+     * 获取日期最新的一条数据MediaItem之后回调相应的方法
+     */
+    public CatchSpecMediaItemCallback.newestCallback catchNewestSpecCallback;
+
 
     private SelectionSpec() {
     }
@@ -95,7 +157,6 @@ public final class SelectionSpec {
     private void reset() {
         mimeTypeSet = null;
         mediaTypeExclusive = true;
-        showSingleMediaType = false;
         themeId = R.style.Matisse_Zhihu;
         orientation = 0;
         countable = false;
@@ -103,21 +164,18 @@ public final class SelectionSpec {
         filters = null;
         captureType = CaptureType.None;
         captureStrategy = null;
-        finishBack = false;
+        captureFinishBack = false;
         spanCount = 3;
-        gridExpectedSize = 0;
-        thumbnailScale = 0.5f;
+        thumbnailScale = 1f;
         imageEngine = new GlideEngine();
         groupByDate = false;
-//        selectedPathList.clear();
-        checkListener = null;
         singleResultModel = false;
         toolbarLayoutId = -1;
-//        selectedPathMap.clear();
         selectedDataList.clear();
-        extraIdMap.clear();
-        catchSpecPosition = -1;
-        catchSpecPositionCallback = null;
+
+        checkListener = null;
+        catchDateSpecCallback = null;
+        catchNewestSpecCallback = null;
     }
 
     public boolean singleSelectionModeEnabled() {
@@ -128,12 +186,22 @@ public final class SelectionSpec {
         return orientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
     }
 
+    /**
+     * 仅仅显示图片
+     *
+     * @return
+     */
     public boolean onlyShowImages() {
-        return showSingleMediaType && MimeType.ofImage().containsAll(mimeTypeSet);
+        return MimeType.ofImage().containsAll(mimeTypeSet);
     }
 
+    /**
+     * 仅仅显示视频
+     *
+     * @return
+     */
     public boolean onlyShowVideos() {
-        return showSingleMediaType && MimeType.ofVideo().containsAll(mimeTypeSet);
+        return MimeType.ofVideo().containsAll(mimeTypeSet);
     }
 
     private static final class InstanceHolder {

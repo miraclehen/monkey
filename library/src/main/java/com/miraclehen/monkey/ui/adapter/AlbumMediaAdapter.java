@@ -36,7 +36,7 @@ import com.miraclehen.monkey.entity.Album;
 import com.miraclehen.monkey.entity.IncapableCause;
 import com.miraclehen.monkey.entity.MediaItem;
 import com.miraclehen.monkey.entity.SelectionSpec;
-import com.miraclehen.monkey.listener.CatchSpePositionCallback;
+import com.miraclehen.monkey.listener.CatchSpecCallbackInvoker;
 import com.miraclehen.monkey.model.SelectedItemCollection;
 import com.miraclehen.monkey.ui.widget.CheckView;
 import com.miraclehen.monkey.ui.widget.MediaGrid;
@@ -169,46 +169,11 @@ public class AlbumMediaAdapter extends
             addCursorView(i);
         }
 
-        invokeDataOrderedCallback(mCursorBeanList);
+        //回调 获取日期最新的一条数据
+        CatchSpecCallbackInvoker.invokeNewestCallback(mAlbum,mCursorBeanList,newCursor);
     }
 
-    private void invokeDataOrderedCallback(List<CursorBean> dataList) {
-        if (mAlbum.isAll()) {
-            //加载全部文件夹相册
-            if (mSelectionSpec.catchSpecPosition != -1 && mSelectionSpec.catchSpecPositionCallback != null) {
-                //获取指定位置的MediaItem数据的回调
-                invokeCatchSpecCallback(dataList, mSelectionSpec.catchSpecPosition, mSelectionSpec.catchSpecPositionCallback);
-                mSelectionSpec.catchSpecPosition = -1;
-                mSelectionSpec.catchSpecPositionCallback = null;
-            }
-        }
-    }
 
-    /**
-     * 获取指定位置的MediaItem数据
-     * <p>
-     * 注意：目前只实现取最新的数据
-     * 后期可以重写这个方法
-     */
-    private void invokeCatchSpecCallback(List<CursorBean> dataList, int position, CatchSpePositionCallback callback) {
-        if (mSelectionSpec.isCapture()) {
-            //跳过的日期视图和拍摄视图
-            position = 2;
-            if (dataList.size() == 2) {
-                return;
-            }
-        }
-
-
-        int reachPos = dataList.get(position).getCursorPosition();
-        if (reachPos == -1) {
-            return;
-        }
-        boolean reachable = mCursor.moveToPosition(reachPos);
-        if (reachable) {
-            callback.catched(position, MediaItem.valueOf(mCursor));
-        }
-    }
 
     /**
      * 添加日期视图
@@ -337,10 +302,10 @@ public class AlbumMediaAdapter extends
             MediaViewHolder mediaViewHolder = (MediaViewHolder) holder;
 
             final MediaItem item = MediaItem.valueOf(cursor);
-            if (item.getUploaded() == -1) {
-                //如果还没确定这张是否上传过
-                item.setUploaded(mSelectionSpec.extraIdMap.containsKey(item.getId()) ? 1 : 0);
-            }
+//            if (item.getUploaded() == -1) {
+//                //如果还没确定这张是否上传过
+//                item.setUploaded(mSelectionSpec.extraIdMap.containsKey(item.getId()) ? 1 : 0);
+//            }
 
             mediaViewHolder.mMediaGrid.preBindMedia(new MediaGrid.PreBindInfo(
                     getImageResize(mediaViewHolder.mMediaGrid.getContext()),
@@ -393,6 +358,7 @@ public class AlbumMediaAdapter extends
 
     /**
      * 当item小图被点击
+     *
      * @param thumbnail
      * @param item
      * @param holder
@@ -400,63 +366,64 @@ public class AlbumMediaAdapter extends
     @Override
     public void onThumbnailClicked(ImageView thumbnail, MediaItem item, RecyclerView.ViewHolder holder) {
         if (mUICallback != null) {
-            mUICallback.onMediaClick(mAlbum,item,holder.getAdapterPosition());
+            mUICallback.onMediaClick(mAlbum, item, holder.getAdapterPosition());
         }
     }
 
     /**
      * 当勾选checkView被点击
+     *
      * @param checkView
      * @param item
      * @param holder
      */
     @Override
     public void onCheckViewClicked(CheckView checkView, MediaItem item, RecyclerView.ViewHolder holder) {
-
         if (mSelectionSpec.countable) {
-            //可数的
+            //数字可选模式
             int checkedNum = mSelectedCollection.checkedNumOf(item);
             if (checkedNum == CheckView.UNCHECKED) {
                 if (assertAddSelection(holder.itemView.getContext(), item)) {
-                    if (mSelectionSpec.extraIdMap.containsKey(item.getId())) {
-                        notifyUploadedFileCheckedListener(item);
-                    }
                     mSelectedCollection.add(item);
-                    notifyCheckStateChanged(item);
+                    notifyListeners(item, true);
                 }
             } else {
                 mSelectedCollection.remove(item);
-                notifyCheckStateChanged(item);
+                notifyListeners(item, false);
             }
         } else {
-            //直接打钩
+            //勾选模式
             if (mSelectedCollection.isSelected(item)) {
                 mSelectedCollection.remove(item);
-                notifyCheckStateChanged(item);
+                notifyListeners(item, false);
             } else {
                 if (assertAddSelection(holder.itemView.getContext(), item)) {
-                    if (mSelectionSpec.extraIdMap.containsKey(item.getId())) {
-                        notifyUploadedFileCheckedListener(item);
-                    }
                     mSelectedCollection.add(item);
-                    notifyCheckStateChanged(item);
+                    notifyListeners(item, true);
                 }
             }
         }
+        notifyDataSetChanged();
     }
 
-    private void notifyCheckStateChanged(MediaItem mediaItem) {
-        notifyDataSetChanged();
+    /**
+     * 通知各种监听器
+     *
+     * @param mediaItem
+     * @param check
+     */
+    private void notifyListeners(MediaItem mediaItem, boolean check) {
+        //更新底部工具条数字监听器
         if (mUICallback != null) {
             mUICallback.updateBottomBarCount();
         }
 
-    }
-
-    private void notifyUploadedFileCheckedListener(MediaItem mediaItem) {
+        //当某个Item被勾选或者取消勾选监听器
         if (mSelectionSpec.checkListener != null) {
-            mSelectionSpec.checkListener.onCheck(mediaItem);
+            mSelectionSpec.checkListener.onCheck(mediaItem, check);
         }
+
+
     }
 
     @Override
@@ -554,9 +521,10 @@ public class AlbumMediaAdapter extends
 
     /**
      * 设置监听器回调
+     *
      * @param callback
      */
-    public void setUICallback(UICallback callback){
+    public void setUICallback(UICallback callback) {
         this.mUICallback = callback;
     }
 

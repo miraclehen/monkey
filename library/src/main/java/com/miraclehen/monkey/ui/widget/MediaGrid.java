@@ -85,21 +85,12 @@ public class MediaGrid extends SquareFrameLayout implements View.OnClickListener
     public void bindMedia(MediaItem item) {
         mMedia = item;
         initCheckView();
-        initUploaded();
         setImage();
         setVideoDuration();
     }
 
     public MediaItem getMedia() {
         return mMedia;
-    }
-
-    private void initUploaded() {
-        if (mMedia.getUploaded() == 1) {
-            mUploadedIv.setVisibility(VISIBLE);
-        } else {
-            mUploadedIv.setVisibility(GONE);
-        }
     }
 
     private void initCheckView() {

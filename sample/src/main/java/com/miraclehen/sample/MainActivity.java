@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,12 +19,13 @@ import com.miraclehen.monkey.MimeType;
 import com.miraclehen.monkey.engine.impl.GlideEngine;
 import com.miraclehen.monkey.entity.CaptureStrategy;
 import com.miraclehen.monkey.entity.MediaItem;
+import com.miraclehen.monkey.listener.OnItemCheckChangeListener;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
-
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+    private static final String TAG = MainActivity.class.getSimpleName();
     private static final int REQUEST_CODE_CHOOSE = 23;
     private static final String BUNDLE_KEY_DATA_LIST = "bundle_key_data_list";
 
@@ -58,12 +60,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         .choose(MimeType.ofImageExcludeGif(), false)
                         .countable(false)
                         .spanCount(4)
-                        .finishBack(false)
+                        .captureFinishBack(false)
                         .captureType(CaptureType.Image)
                         .captureStrategy(new CaptureStrategy(true, "com.miraclehen.sample.fileprovider"))
                         .maxSelectable(20)
                         .groupByDate(true)
-                        .showSingleMediaType(true)
+                        .checkListener(new OnItemCheckChangeListener() {
+                            @Override
+                            public void onCheck(MediaItem mediaItem, boolean check) {
+                                Log.i(TAG, mediaItem.toString() + "  \n" + check);
+                            }
+                        })
                         .thumbnailScale(0.85f)
                         .imageEngine(new GlideEngine())
                         .forResult(REQUEST_CODE_CHOOSE);
@@ -71,7 +78,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.dracula:
                 Matisse.from(MainActivity.this)
                         .choose(MimeType.ofAll())
-                        .showSingleMediaType(true)
                         .theme(R.style.Matisse_Zhihu)
                         .captureStrategy(new CaptureStrategy(true, "com.miraclehen.sample.fileprovider"))
                         .countable(false)
@@ -168,7 +174,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private List<Uri> getUri(){
+    private List<Uri> getUri() {
         List<Uri> result = new ArrayList<>();
         if (dataList == null) {
             return result;

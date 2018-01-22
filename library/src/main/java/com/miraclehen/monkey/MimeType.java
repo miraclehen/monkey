@@ -41,9 +41,7 @@ public enum MimeType {
 
     // ============== images ==============
     JPEG("image/jpeg", arraySetOf(
-            "jpg",
-            "jpeg"
-    )),
+            "jpg", "jpeg")),
     PNG("image/png", arraySetOf(
             "png"
     )),
@@ -59,23 +57,19 @@ public enum MimeType {
 
     // ============== videos ==============
     MPEG("video/mpeg", arraySetOf(
-            "mpeg",
-            "mpg"
+            "mpeg", "mpg"
     )),
     MP4("video/mp4", arraySetOf(
-            "mp4",
-            "m4v"
+            "mp4", "m4v"
     )),
     QUICKTIME("video/quicktime", arraySetOf(
             "mov"
     )),
     THREEGPP("video/3gpp", arraySetOf(
-            "3gp",
-            "3gpp"
+            "3gp", "3gpp"
     )),
     THREEGPP2("video/3gpp2", arraySetOf(
-            "3g2",
-            "3gpp2"
+            "3g2", "3gpp2"
     )),
     MKV("video/x-matroska", arraySetOf(
             "mkv"
