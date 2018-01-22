@@ -172,25 +172,7 @@ public class MediaItem implements Parcelable {
 
         MediaItem item = (MediaItem) o;
 
-//        if (id != item.id) return false;
-//        return id == item.id;
-//        if (length != item.length) return false;
-//        if (duration != item.duration) return false;
-//        if (Double.compare(item.latitude, latitude) != 0) return false;
-//        if (Double.compare(item.longitude, longitude) != 0) return false;
-//        if (createDate != item.createDate) return false;
-//        if (width != item.width) return false;
-//        if (height != item.height) return false;
-//        if (modifiedDate != item.modifiedDate) return false;
-//        if (mimeType != null ? !mimeType.equals(item.mimeType) : item.mimeType != null)
-//            return false;
-//        return originalPath != null ? originalPath.equals(item.originalPath) : item.originalPath == null;
         return originalPath != null ? originalPath.equals(item.originalPath) : item.originalPath == null;
-//        if (thumbnailBigPath != null ? !thumbnailBigPath.equals(item.thumbnailBigPath) : item.thumbnailBigPath != null)
-//            return false;
-//        if (thumbnailSmallPath != null ? !thumbnailSmallPath.equals(item.thumbnailSmallPath) : item.thumbnailSmallPath != null)
-//            return false;
-//        return bucketId != null ? bucketId.equals(item.bucketId) : item.bucketId == null;
     }
 
     @Override
