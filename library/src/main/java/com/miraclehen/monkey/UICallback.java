@@ -11,28 +11,22 @@ public interface UICallback {
 
     /**
      * 当小图被点击
+     *
+     * @param album           小图所在相册文件夹
+     * @param item            MediaItem实体
+     * @param adapterPosition 在adapter中的位置
      */
-    interface OnMediaClickListener {
-        void onMediaClick(Album album, MediaItem item, int adapterPosition);
-    }
-
-    interface CheckStateListener {
-        void onUpdate();
-    }
+    void onMediaClick(Album album, MediaItem item, int adapterPosition);
 
     /**
-     * 加载中对话框回调
+     * 更新底部工具条显示的选中数量
      */
-    interface LoadingDialogCallback {
-        /**
-         * 显示加载中对话框
-         */
-        void showDialog();
+    void updateBottomBarCount();
 
-        /**
-         * 对话框消失
-         */
-        void dismissDialog();
-    }
+    /**
+     * 启动拍摄
+     * @param captureType 拍摄类型
+     */
+    void startCapture(CaptureType captureType);
 
 }

@@ -43,8 +43,7 @@ import com.miraclehen.monkey.ui.adapter.AlbumMediaAdapter;
  * 一本相册的内容
  */
 public class MediaSelectionFragment extends Fragment implements
-        AlbumMediaCollection.AlbumMediaCallbacks, UICallback.CheckStateListener,
-        UICallback.OnMediaClickListener {
+        AlbumMediaCollection.AlbumMediaCallbacks{
 
     public static final String EXTRA_ALBUM = "extra_album";
 
@@ -53,9 +52,7 @@ public class MediaSelectionFragment extends Fragment implements
     private AlbumMediaAdapter mAdapter;
     private SelectionProvider mSelectionProvider;
 
-    private UICallback.CheckStateListener mCheckStateListener;
-    private UICallback.OnMediaClickListener mOnMediaClickListener;
-    private UICallback.LoadingDialogCallback mLoadingDialogCallback;
+    private UICallback mUICallback;
 
     private Album mAlbum;
     private SelectionSpec mSelectionSpec;
@@ -93,14 +90,8 @@ public class MediaSelectionFragment extends Fragment implements
         } else {
             throw new IllegalStateException("Context must implement SelectionProvider.");
         }
-        if (context instanceof UICallback.CheckStateListener) {
-            mCheckStateListener = (UICallback.CheckStateListener) context;
-        }
-        if (context instanceof UICallback.OnMediaClickListener) {
-            mOnMediaClickListener = (UICallback.OnMediaClickListener) context;
-        }
-        if (context instanceof UICallback.LoadingDialogCallback) {
-            mLoadingDialogCallback = (UICallback.LoadingDialogCallback) context;
+        if (context instanceof UICallback) {
+            mUICallback = (UICallback)context;
         }
     }
 
@@ -126,8 +117,7 @@ public class MediaSelectionFragment extends Fragment implements
         mSelectedItemCollection = mSelectionProvider.provideSelectedItemCollection();
         mAdapter = new AlbumMediaAdapter(getContext(), mAlbum,
                 mSelectedItemCollection, mRecyclerView, mSelectionSpec.selectedDataList);
-        mAdapter.registerCheckStateListener(this);
-        mAdapter.registerOnMediaClickListener(this);
+        mAdapter.setUICallback(mUICallback);
         mRecyclerView.setHasFixedSize(true);
 
         mRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 4));
@@ -174,7 +164,7 @@ public class MediaSelectionFragment extends Fragment implements
                 if (assertAddSelection(getContext(), mediaItem)) {
                     mSelectedItemCollection.add(mediaItem);
                     //更新底部工具栏个数
-                    onUpdate();
+                    updateBottomBarCount();
                 }
             }
             //消费掉此事件
@@ -250,30 +240,21 @@ public class MediaSelectionFragment extends Fragment implements
                 break;
             }
         }
-        if (mCheckStateListener != null) {
-            mCheckStateListener.onUpdate();
+       updateBottomBarCount();
+    }
+
+    /**
+     * 更新底部工具栏数字
+     */
+    private void updateBottomBarCount(){
+        if (mUICallback != null) {
+            mUICallback.updateBottomBarCount();
         }
     }
 
     @Override
     public void onAlbumMediaReset() {
         mAdapter.swapCursor(null);
-    }
-
-    @Override
-    public void onUpdate() {
-        // notify outer Activity that check state changed
-        if (mCheckStateListener != null) {
-            mCheckStateListener.onUpdate();
-        }
-    }
-
-    @Override
-    public void onMediaClick(Album album, MediaItem item, int adapterPosition) {
-        if (mOnMediaClickListener != null) {
-            mOnMediaClickListener.onMediaClick((Album) getArguments().getParcelable(EXTRA_ALBUM),
-                    item, adapterPosition);
-        }
     }
 
     public interface SelectionProvider {

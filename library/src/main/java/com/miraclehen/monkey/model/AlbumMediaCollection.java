@@ -20,7 +20,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -89,7 +88,7 @@ public class AlbumMediaCollection implements LoaderManager.LoaderCallbacks<Curso
      *
      * @param target
      */
-    public void load(@Nullable Album target) {
+    public void load(Album target) {
         load(target, CaptureType.None);
     }
 
@@ -99,11 +98,11 @@ public class AlbumMediaCollection implements LoaderManager.LoaderCallbacks<Curso
      * @param target
      * @param captureType
      */
-    public void load(@Nullable Album target, CaptureType captureType) {
+    public void load( Album target, CaptureType captureType) {
         mLoaderManager.initLoader(LOADER_ID, makeArgument(target, captureType), this);
     }
 
-    public void restart(@Nullable Album target, CaptureType captureType){
+    public void restart( Album target, CaptureType captureType){
         mLoaderManager.restartLoader(LOADER_ID, makeArgument(target, captureType), this);
     }
 

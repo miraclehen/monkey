@@ -30,7 +30,9 @@ import android.support.v4.content.FileProvider;
 import android.support.v4.os.EnvironmentCompat;
 import android.text.TextUtils;
 
+import com.miraclehen.monkey.CaptureType;
 import com.miraclehen.monkey.entity.CaptureStrategy;
+import com.miraclehen.monkey.entity.SelectionSpec;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,20 +53,19 @@ public class MediaStoreCompat {
     private Uri mCurrentPhotoUri;
     private String mCurrentPhotoPath;
 
+    private SelectionSpec mSpec;
 
-    public enum CaptureType {
-        Image,
-        Video,
-    }
 
     public MediaStoreCompat(Activity activity) {
         mContext = new WeakReference<>(activity);
         mFragment = null;
+        mSpec = SelectionSpec.getInstance();
     }
 
     public MediaStoreCompat(Activity activity, Fragment fragment) {
         mContext = new WeakReference<>(activity);
         mFragment = new WeakReference<>(fragment);
+        mSpec = SelectionSpec.getInstance();
     }
 
     /**
@@ -88,13 +89,13 @@ public class MediaStoreCompat {
      * @param context
      * @param requestCode
      */
-    public void dispatchCaptureIntent(Context context, int requestCode, CaptureType type) {
-        Intent captureIntent = type == CaptureType.Image
+    public void dispatchCaptureIntent(Context context, int requestCode) {
+        Intent captureIntent = mSpec.captureType == CaptureType.Image
                 ? new Intent(MediaStore.ACTION_IMAGE_CAPTURE) : new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
         if (captureIntent.resolveActivity(context.getPackageManager()) != null) {
             File targetFile = null;
             try {
-                targetFile = createFile(type);
+                targetFile = createFile(mSpec.captureType);
             } catch (IOException e) {
                 e.printStackTrace();
             }

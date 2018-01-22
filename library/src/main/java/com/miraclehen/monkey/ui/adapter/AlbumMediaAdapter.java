@@ -29,6 +29,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.miraclehen.monkey.CaptureType;
 import com.miraclehen.monkey.R;
 import com.miraclehen.monkey.UICallback;
 import com.miraclehen.monkey.entity.Album;
@@ -68,8 +69,13 @@ public class AlbumMediaAdapter extends
     private final Drawable mPlaceholder;
     //外部可选配置
     private SelectionSpec mSelectionSpec;
-    private UICallback.CheckStateListener mCheckStateListener;
-    private UICallback.OnMediaClickListener mOnMediaClickListener;
+
+
+    /**
+     * 点击监听器回调
+     */
+    private UICallback mUICallback;
+
     private RecyclerView mRecyclerView;
     private int mImageResize;
     private int mDateCount = 0;
@@ -256,8 +262,8 @@ public class AlbumMediaAdapter extends
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (v.getContext() instanceof OnPhotoCapture) {
-                        ((OnPhotoCapture) v.getContext()).capture();
+                    if (mUICallback != null) {
+                        mUICallback.startCapture(CaptureType.Image);
                     }
                 }
             });
@@ -269,8 +275,8 @@ public class AlbumMediaAdapter extends
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (v.getContext() instanceof OnPhotoCapture) {
-                        ((OnPhotoCapture) v.getContext()).record();
+                    if (mUICallback != null) {
+                        mUICallback.startCapture(CaptureType.Video);
                     }
                 }
             });
@@ -393,8 +399,8 @@ public class AlbumMediaAdapter extends
      */
     @Override
     public void onThumbnailClicked(ImageView thumbnail, MediaItem item, RecyclerView.ViewHolder holder) {
-        if (mOnMediaClickListener != null) {
-            mOnMediaClickListener.onMediaClick(null, item, holder.getAdapterPosition());
+        if (mUICallback != null) {
+            mUICallback.onMediaClick(mAlbum,item,holder.getAdapterPosition());
         }
     }
 
@@ -441,8 +447,8 @@ public class AlbumMediaAdapter extends
 
     private void notifyCheckStateChanged(MediaItem mediaItem) {
         notifyDataSetChanged();
-        if (mCheckStateListener != null) {
-            mCheckStateListener.onUpdate();
+        if (mUICallback != null) {
+            mUICallback.updateBottomBarCount();
         }
 
     }
@@ -546,12 +552,12 @@ public class AlbumMediaAdapter extends
         return cause == null;
     }
 
-    public void registerCheckStateListener(UICallback.CheckStateListener listener) {
-        mCheckStateListener = listener;
-    }
-
-    public void registerOnMediaClickListener(UICallback.OnMediaClickListener listener) {
-        mOnMediaClickListener = listener;
+    /**
+     * 设置监听器回调
+     * @param callback
+     */
+    public void setUICallback(UICallback callback){
+        this.mUICallback = callback;
     }
 
     private int getImageResize(Context context) {
@@ -565,12 +571,6 @@ public class AlbumMediaAdapter extends
             mImageResize = (int) (mImageResize * mSelectionSpec.thumbnailScale);
         }
         return mImageResize;
-    }
-
-    public interface OnPhotoCapture {
-        void capture();
-
-        void record();
     }
 
     private String getFormatDate(Date date) {

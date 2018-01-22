@@ -55,11 +55,9 @@ import com.miraclehen.monkey.model.AlbumCollection;
 import com.miraclehen.monkey.model.SelectedItemCollection;
 import com.miraclehen.monkey.ui.AlbumPreviewActivity;
 import com.miraclehen.monkey.ui.BasePreviewActivity;
-import com.miraclehen.monkey.ui.LoadingDialog;
 import com.miraclehen.monkey.ui.MediaSelectionFragment;
 import com.miraclehen.monkey.ui.PermissionExplainDialog;
 import com.miraclehen.monkey.ui.SelectedPreviewActivity;
-import com.miraclehen.monkey.ui.adapter.AlbumMediaAdapter;
 import com.miraclehen.monkey.ui.adapter.AlbumsAdapter;
 import com.miraclehen.monkey.ui.widget.AlbumsSpinner;
 import com.miraclehen.monkey.utils.MediaStoreCompat;
@@ -76,8 +74,7 @@ import io.reactivex.functions.Consumer;
 public class MatisseActivity extends AppCompatActivity implements
         AlbumCollection.AlbumCallbacks, AdapterView.OnItemSelectedListener,
         MediaSelectionFragment.SelectionProvider, View.OnClickListener,
-        UICallback.CheckStateListener, UICallback.OnMediaClickListener,
-        AlbumMediaAdapter.OnPhotoCapture, UICallback.LoadingDialogCallback {
+        UICallback {
 
     public static final String TAG = MatisseActivity.class.getSimpleName();
 
@@ -91,7 +88,6 @@ public class MatisseActivity extends AppCompatActivity implements
 
     private static final int REQUEST_CODE_PREVIEW = 23;
     private static final int REQUEST_CODE_CAPTURE = 24;
-    private static final int REQUEST_CODE_VIDEO = 25;
 
     private final AlbumCollection mAlbumCollection = new AlbumCollection();
     private MediaStoreCompat mMediaStoreCompat;
@@ -110,7 +106,6 @@ public class MatisseActivity extends AppCompatActivity implements
     private FrameLayout mToolbarWrapperLayout;
     private TextView mAnchorView;
 
-    private LoadingDialog mLoadingDialog;
 
     private OnScanCompletedListenerImpl mOnScanCompletedCallback;
 
@@ -138,15 +133,15 @@ public class MatisseActivity extends AppCompatActivity implements
             mMediaStoreCompat.onRestoreInstanceState(savedInstanceState);
         }
 
-        mButtonPreview = (TextView) findViewById(R.id.button_preview);
-        mButtonApply = (TextView) findViewById(R.id.button_apply);
+        mButtonPreview = findViewById(R.id.button_preview);
+        mButtonApply = findViewById(R.id.button_apply);
         mButtonPreview.setOnClickListener(this);
         mButtonApply.setOnClickListener(this);
         mContainer = findViewById(R.id.container);
         mEmptyView = findViewById(R.id.empty_view);
-        mBottomToolbar = (FrameLayout) findViewById(R.id.bottom_toolbar);
-        mToolbarWrapperLayout = (FrameLayout) findViewById(R.id.toolbar_layout);
-        mAnchorView = (TextView) findViewById(R.id.selected_album);
+        mBottomToolbar = findViewById(R.id.bottom_toolbar);
+        mToolbarWrapperLayout = findViewById(R.id.toolbar_layout);
+        mAnchorView = findViewById(R.id.selected_album);
 
         //初始化布局头部布局
         initToolbarLayout();
@@ -279,8 +274,7 @@ public class MatisseActivity extends AppCompatActivity implements
                 }
                 updateBottomToolbar();
             }
-        } else if (requestCode == REQUEST_CODE_CAPTURE || requestCode == REQUEST_CODE_VIDEO) {
-//            showDialog();
+        } else if (requestCode == REQUEST_CODE_CAPTURE) {
             //拍完照或者录制视频之后
             //文件的路径
             final String path = mMediaStoreCompat.getCurrentPhotoPath();
@@ -319,27 +313,7 @@ public class MatisseActivity extends AppCompatActivity implements
         MediaSelectionFragment mediaSelectionFragment = (MediaSelectionFragment) getSupportFragmentManager()
                 .findFragmentByTag(MediaSelectionFragment.class.getSimpleName());
         if (mediaSelectionFragment != null) {
-            mediaSelectionFragment.reloadForCapture(mSpec.finishBack ? captureLaterCallback : null,capturePath);
-        }
-    }
-
-    /**
-     * 显示加载中对话框
-     */
-    @Override
-    public void showDialog() {
-        if (mLoadingDialog == null) {
-            mLoadingDialog = new LoadingDialog();
-        }
-        mLoadingDialog.show(getSupportFragmentManager(), LoadingDialog.class.getSimpleName());
-    }
-
-    /**
-     * 加载中对话框消失
-     */
-    public void dismissDialog() {
-        if (mLoadingDialog != null) {
-            mLoadingDialog.dismiss();
+            mediaSelectionFragment.reloadForCapture(mSpec.finishBack ? captureLaterCallback : null, capturePath);
         }
     }
 
@@ -465,9 +439,23 @@ public class MatisseActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onUpdate() {
+    public void updateBottomBarCount() {
         // notify bottom toolbar that check state changed.
         updateBottomToolbar();
+    }
+
+    /**
+     * 启动拍摄
+     *
+     * @param captureType 拍摄类型
+     */
+    @Override
+    public void startCapture(CaptureType captureType) {
+        if (Build.VERSION.SDK_INT < 22) {
+            mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_CAPTURE);
+        } else {
+            requestWriteStoragePermission(captureType);
+        }
     }
 
     /**
@@ -482,9 +470,6 @@ public class MatisseActivity extends AppCompatActivity implements
     public void onMediaClick(Album album, MediaItem item, int adapterPosition) {
         if (mSpec.singleResultModel) {
             mSelectedCollection.add(item);
-//            if (!mSpec.selectedPathList.contains(item.getOriginalPath())) {
-//                mSpec.selectedPathList.add(item.getOriginalPath());
-//            }
             //如果是单一结果模式。直接结束选择
             mButtonApply.callOnClick();
             return;
@@ -504,30 +489,6 @@ public class MatisseActivity extends AppCompatActivity implements
         return mSelectedCollection;
     }
 
-    /**
-     * 启动拍照
-     */
-    @Override
-    public void capture() {
-        if (Build.VERSION.SDK_INT < 22) {
-            mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_CAPTURE, MediaStoreCompat.CaptureType.Image);
-        } else {
-            requestWriteStoragePermission(MediaStoreCompat.CaptureType.Image);
-        }
-    }
-
-    /**
-     * 启动摄像
-     */
-    @Override
-    public void record() {
-        if (Build.VERSION.SDK_INT < 22) {
-            mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_VIDEO, MediaStoreCompat.CaptureType.Video);
-        } else {
-            requestWriteStoragePermission(MediaStoreCompat.CaptureType.Video);
-        }
-    }
-
     @Override
     public void finish() {
         //将原来的数据返回回去
@@ -542,7 +503,7 @@ public class MatisseActivity extends AppCompatActivity implements
      * @param captureType
      */
     @RequiresApi(22)
-    private void requestPhotoCameraPermission(MediaStoreCompat.CaptureType captureType) {
+    private void requestPhotoCameraPermission(CaptureType captureType) {
         if (ActivityCompat.checkSelfPermission(MatisseActivity.this, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
@@ -561,11 +522,7 @@ public class MatisseActivity extends AppCompatActivity implements
             }
         } else {
             if (mSpec.isCapture()) {
-                if (captureType == MediaStoreCompat.CaptureType.Image) {
-                    mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_CAPTURE, MediaStoreCompat.CaptureType.Image);
-                } else {
-                    mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_VIDEO, MediaStoreCompat.CaptureType.Video);
-                }
+                mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_CAPTURE);
             }
         }
     }
@@ -601,7 +558,7 @@ public class MatisseActivity extends AppCompatActivity implements
      * @param captureType
      */
     @RequiresApi(22)
-    private void requestWriteStoragePermission(MediaStoreCompat.CaptureType captureType) {
+    private void requestWriteStoragePermission(CaptureType captureType) {
         if (ActivityCompat.checkSelfPermission(MatisseActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
@@ -621,7 +578,6 @@ public class MatisseActivity extends AppCompatActivity implements
 
         } else {
             requestPhotoCameraPermission(captureType);
-
         }
     }
 
@@ -636,8 +592,9 @@ public class MatisseActivity extends AppCompatActivity implements
                 Toast.makeText(MatisseActivity.this, "无法获取到访问你的相册权限", Toast.LENGTH_LONG).show();
             }
         } else if (requestCode == PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE) {
+            //请求写入权限
             if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_VIDEO, MediaStoreCompat.CaptureType.Video);
+                mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_CAPTURE);
             } else {
                 //被拒绝
                 Toast.makeText(MatisseActivity.this, "无法获取到写入文件权限", Toast.LENGTH_LONG).show();
@@ -645,19 +602,11 @@ public class MatisseActivity extends AppCompatActivity implements
         } else if (requestCode == PERMISSION_REQUEST_CAMERA) {
             //请求相机权限
             if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                if (mSpec.isCapture()) {
-                    if (mSpec.isCapture()) {
-                        mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_CAPTURE, MediaStoreCompat.CaptureType.Image);
-                    } else {
-                        mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_VIDEO, MediaStoreCompat.CaptureType.Video);
-                    }
-                }
-                mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_VIDEO, MediaStoreCompat.CaptureType.Video);
+                mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_CAPTURE);
             } else {
                 //被拒绝
                 Toast.makeText(MatisseActivity.this, "无法获取到拍摄权限", Toast.LENGTH_LONG).show();
             }
-
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
