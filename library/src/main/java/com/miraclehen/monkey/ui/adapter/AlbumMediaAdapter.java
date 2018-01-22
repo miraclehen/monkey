@@ -107,6 +107,7 @@ public class AlbumMediaAdapter extends
         //日期与cursor的位置
         mDateWithPosMap.clear();
         mDateList.clear();
+        mCursorBeanList.clear();
 
         if (newCursor == null || newCursor.getCount() == 0) {
             return;

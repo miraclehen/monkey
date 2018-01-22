@@ -228,8 +228,13 @@ public class MatisseActivity extends AppCompatActivity implements
             mOnScanCompletedCallback.clearCallback();
         }
         mOnScanCompletedCallback = null;
-        super.onDestroy();
-        mAlbumCollection.onDestroy();
+        try {
+            mAlbumCollection.onDestroy();
+            super.onDestroy();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override
