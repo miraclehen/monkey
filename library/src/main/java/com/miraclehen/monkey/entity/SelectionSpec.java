@@ -43,11 +43,6 @@ public final class SelectionSpec {
     public Set<MimeType> mimeTypeSet;
 
     /**
-     * 当数据资源为视频和图片混合时候，是否能同时选中它们
-     */
-    public boolean mediaTypeExclusive;
-
-    /**
      * 主题资源id
      */
     @StyleRes
@@ -69,12 +64,12 @@ public final class SelectionSpec {
     public int maxSelectable;
 
     /**
-     * 数据过滤器
+     * 选中数据过滤器
      */
     public List<Filter> filters;
 
     /**
-     * 拍摄类型，包括照片，视频，或者都不
+     * 拍摄类型，拍摄照片，录制视频，或者都不
      */
     public CaptureType captureType;
 
@@ -90,6 +85,7 @@ public final class SelectionSpec {
 
     /**
      * 缩略图缩放比例
+     * 最大值为1f
      */
     public float thumbnailScale;
 
@@ -104,7 +100,7 @@ public final class SelectionSpec {
     public boolean groupByDate;
 
     /**
-     * 一行的数量
+     * 一行的item数量
      */
     public int spanCount;
 
@@ -156,7 +152,6 @@ public final class SelectionSpec {
 
     private void reset() {
         mimeTypeSet = null;
-        mediaTypeExclusive = true;
         themeId = R.style.Matisse_Zhihu;
         orientation = 0;
         countable = false;
@@ -166,7 +161,7 @@ public final class SelectionSpec {
         captureStrategy = null;
         captureFinishBack = false;
         spanCount = 3;
-        thumbnailScale = 0.5f;
+        thumbnailScale = 0.85f;
         imageEngine = new GlideEngine();
         groupByDate = false;
         singleResultModel = false;

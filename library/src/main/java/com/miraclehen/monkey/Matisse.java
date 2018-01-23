@@ -120,24 +120,7 @@ public final class Matisse {
      * @see SelectionCreator
      */
     public SelectionCreator choose(Set<MimeType> mimeTypes) {
-        return this.choose(mimeTypes, true);
-    }
-
-    /**
-     * MIME types the selection constrains on.
-     * <p>
-     * Types not included in the set will still be shown in the grid but can't be chosen.
-     *
-     * @param mimeTypes          MIME types set user can choose from.
-     * @param mediaTypeExclusive Whether can choose images and videos at the same time during one single choosing
-     *                           process. true corresponds to not being able to choose images and videos at the same
-     *                           time, and false corresponds to being able to do this.
-     * @return {@link SelectionCreator} to build select specifications.
-     * @see MimeType
-     * @see SelectionCreator
-     */
-    public SelectionCreator choose(Set<MimeType> mimeTypes, boolean mediaTypeExclusive) {
-        return new SelectionCreator(this, mimeTypes, mediaTypeExclusive);
+        return new SelectionCreator(this, mimeTypes);
     }
 
     @Nullable

@@ -514,6 +514,12 @@ public class AlbumMediaAdapter extends
         });
     }
 
+    /**
+     * 是否可以选中
+     * @param context
+     * @param item
+     * @return
+     */
     private boolean assertAddSelection(Context context, MediaItem item) {
         IncapableCause cause = mSelectedCollection.isAcceptable(item);
         IncapableCause.handleCause(context, cause);

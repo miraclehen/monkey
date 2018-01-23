@@ -17,6 +17,7 @@ import com.miraclehen.monkey.Matisse;
 import com.miraclehen.monkey.MatisseActivity;
 import com.miraclehen.monkey.MimeType;
 import com.miraclehen.monkey.engine.impl.GlideEngine;
+import com.miraclehen.monkey.engine.impl.PicassoEngine;
 import com.miraclehen.monkey.entity.CaptureStrategy;
 import com.miraclehen.monkey.entity.MediaItem;
 import com.miraclehen.monkey.listener.OnItemCheckChangeListener;
@@ -40,6 +41,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         findViewById(R.id.zhihu).setOnClickListener(this);
         findViewById(R.id.dracula).setOnClickListener(this);
+        findViewById(R.id.dracula22).setOnClickListener(this);
 
         if (savedInstanceState != null && savedInstanceState.getParcelableArrayList(BUNDLE_KEY_DATA_LIST) != null) {
             dataList = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_DATA_LIST);
@@ -57,11 +59,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
             case R.id.zhihu:
                 Matisse.from(MainActivity.this)
-                        .choose(MimeType.ofImageExcludeGif(), false)
-                        .countable(false)
+                        .choose(MimeType.ofImageExcludeGif())
+                        .countable(true)
                         .spanCount(4)
                         .captureFinishBack(false)
-                        .captureType(CaptureType.Image)
+                        .captureType(CaptureType.None)
                         .captureStrategy(new CaptureStrategy(true, "com.miraclehen.sample.fileprovider"))
                         .maxSelectable(20)
                         .groupByDate(true)
@@ -77,15 +79,42 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.dracula:
                 Matisse.from(MainActivity.this)
-                        .choose(MimeType.ofAll())
-                        .theme(R.style.Matisse_Zhihu)
-                        .captureStrategy(new CaptureStrategy(true, "com.miraclehen.sample.fileprovider"))
+                        .choose(MimeType.ofImageExcludeGif())
                         .countable(false)
-                        .captureType(CaptureType.Video)
                         .spanCount(4)
+                        .captureFinishBack(false)
+                        .captureType(CaptureType.Image)
+                        .captureStrategy(new CaptureStrategy(true, "com.miraclehen.sample.fileprovider"))
+                        .maxSelectable(20)
                         .groupByDate(true)
-                        .maxSelectable(9)
-                        .imageEngine(new GlideEngine())
+                        .checkListener(new OnItemCheckChangeListener() {
+                            @Override
+                            public void onCheck(MediaItem mediaItem, boolean check) {
+                                Log.i(TAG, mediaItem.toString() + "  \n" + check);
+                            }
+                        })
+                        .thumbnailScale(0.85f)
+                        .imageEngine(new PicassoEngine())
+                        .forResult(REQUEST_CODE_CHOOSE);
+                break;
+            case R.id.dracula22:
+                Matisse.from(MainActivity.this)
+                        .choose(MimeType.ofImageExcludeGif())
+                        .countable(false)
+                        .spanCount(4)
+                        .captureFinishBack(false)
+                        .captureType(CaptureType.Video)
+                        .captureStrategy(new CaptureStrategy(true, "com.miraclehen.sample.fileprovider"))
+                        .maxSelectable(20)
+                        .groupByDate(true)
+                        .checkListener(new OnItemCheckChangeListener() {
+                            @Override
+                            public void onCheck(MediaItem mediaItem, boolean check) {
+                                Log.i(TAG, mediaItem.toString() + "  \n" + check);
+                            }
+                        })
+                        .thumbnailScale(0.85f)
+                        .imageEngine(new PicassoEngine())
                         .forResult(REQUEST_CODE_CHOOSE);
                 break;
         }

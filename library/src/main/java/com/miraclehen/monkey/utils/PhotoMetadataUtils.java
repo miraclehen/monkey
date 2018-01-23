@@ -126,6 +126,12 @@ public final class PhotoMetadataUtils {
         return uri.getPath();
     }
 
+    /**
+     * 是否可以选中
+     * @param context
+     * @param item
+     * @return
+     */
     public static IncapableCause isAcceptable(Context context, MediaItem item) {
         if (!isSelectableType(context, item)) {
             return new IncapableCause(context.getString(R.string.error_file_type));
@@ -142,6 +148,12 @@ public final class PhotoMetadataUtils {
         return null;
     }
 
+    /**
+     * 是否可以选中此类型
+     * @param context
+     * @param item
+     * @return
+     */
     private static boolean isSelectableType(Context context, MediaItem item) {
         if (context == null) {
             return false;

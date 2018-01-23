@@ -21,6 +21,7 @@ import android.net.Uri;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestOptions;
 import com.miraclehen.monkey.engine.ImageEngine;
@@ -30,16 +31,24 @@ import com.miraclehen.monkey.engine.ImageEngine;
  */
 
 public class GlideEngine implements ImageEngine {
+    private RequestOptions thumbnailOptions;
+    private RequestOptions gifThumbnailOptions;
+
+    private RequestOptions imageOptions;
+    private RequestOptions gifImageOptions;
 
     @Override
     public void loadThumbnail(Context context, int resize, Drawable placeholder, ImageView imageView, Uri uri) {
-        RequestOptions options = new RequestOptions()
-                .placeholder(placeholder)
-                .override(resize,resize)
-                .centerCrop();
+        if (thumbnailOptions == null) {
+            thumbnailOptions = new RequestOptions()
+                    .placeholder(placeholder)
+                    .override(resize, resize)
+                    .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
+                    .centerCrop();
+        }
         Glide.with(context)
                 .load(uri)
-                .apply(options)
+                .apply(thumbnailOptions)
                 .transition(new DrawableTransitionOptions().crossFade())
                 .into(imageView);
     }
@@ -47,29 +56,41 @@ public class GlideEngine implements ImageEngine {
     @Override
     public void loadGifThumbnail(Context context, int resize, Drawable placeholder, ImageView imageView,
                                  Uri uri) {
-        RequestOptions options = new RequestOptions()
-                .placeholder(placeholder)
-                .override(resize,resize)
-                .centerCrop();
+        if (gifThumbnailOptions == null) {
+            gifThumbnailOptions = new RequestOptions()
+                    .placeholder(placeholder)
+                    .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
+                    .override(resize, resize)
+                    .centerCrop();
+        }
         Glide.with(context)
                 .load(uri)
-                .apply(options)
+                .apply(gifThumbnailOptions)
                 .transition(new DrawableTransitionOptions().crossFade())
                 .into(imageView);
     }
 
     @Override
-    public void loadImage(Context context,ImageView imageView, Uri uri) {
-        RequestOptions options = new RequestOptions();
+    public void loadImage(Context context, ImageView imageView, Uri uri) {
+        if (imageOptions == null) {
+            imageOptions = new RequestOptions()
+                    .diskCacheStrategy(DiskCacheStrategy.RESOURCE);
+        }
         Glide.with(context)
                 .load(uri)
+                .apply(imageOptions)
                 .into(imageView);
     }
 
     @Override
     public void loadGifImage(Context context, ImageView imageView, Uri uri) {
+        if (gifImageOptions == null) {
+            gifImageOptions = new RequestOptions()
+                    .diskCacheStrategy(DiskCacheStrategy.RESOURCE);
+        }
         Glide.with(context)
                 .load(uri)
+                .apply(gifImageOptions)
                 .into(imageView);
     }
 

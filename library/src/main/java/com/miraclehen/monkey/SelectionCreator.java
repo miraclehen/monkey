@@ -96,11 +96,10 @@ public final class SelectionCreator {
      * @param mimeTypes MIME type set to select. 如果为true，那么在mineType显示图片和视频的情况下，用户可以同时选择图片或者视频。
      *                  false则只能选择图片或者视频其中之一
      */
-    SelectionCreator(Matisse matisse, @NonNull Set<MimeType> mimeTypes, boolean mediaTypeExclusive) {
+    SelectionCreator(Matisse matisse, @NonNull Set<MimeType> mimeTypes) {
         mMatisse = matisse;
         mSelectionSpec = SelectionSpec.getCleanInstance();
         mSelectionSpec.mimeTypeSet = mimeTypes;
-        mSelectionSpec.mediaTypeExclusive = mediaTypeExclusive;
         mSelectionSpec.orientation = SCREEN_ORIENTATION_UNSPECIFIED;
     }
 
@@ -172,6 +171,11 @@ public final class SelectionCreator {
         return this;
     }
 
+    /**
+     * 拍摄类型
+     * @param captureType
+     * @return
+     */
     public SelectionCreator captureType(CaptureType captureType) {
         mSelectionSpec.captureType = captureType;
         return this;
@@ -343,7 +347,7 @@ public final class SelectionCreator {
      * @param callback CatchSpecMediaItemCallback.dateCallback
      * @return SelectionCreator
      */
-    public SelectionCreator catchNewestCallback(CatchSpecMediaItemCallback.dateCallback callback) {
+    public SelectionCreator catchSpecDateCallback(CatchSpecMediaItemCallback.dateCallback callback) {
         if ( callback == null) {
             throw new IllegalArgumentException("CatchSpecMediaItemCallback.dateCallback not be null ");
         }
