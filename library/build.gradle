@@ -3,23 +3,21 @@ apply plugin: 'com.novoda.bintray-release'
 
 android {
     compileSdkVersion 26
-    buildToolsVersion '26.0.2'
+    buildToolsVersion "26.0.3"
 
     defaultConfig {
         minSdkVersion 15
         targetSdkVersion 26
-        versionCode 3
-        versionName "1.0.2"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+
+    lintOptions {
+        abortOnError false
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-
-        lintOptions {
-            abortOnError false
         }
     }
 }
@@ -30,7 +28,7 @@ publish {
     userOrg = 'miraclehen'
     groupId = 'com.miraclehen'
     artifactId = 'monkey'
-    publishVersion = '1.0.2'
+    publishVersion = '1.0.3'
     desc = 'A select media file library for android.'
     website = 'https://github.com/miraclehen/monkey'
 }
@@ -39,15 +37,14 @@ ext.supportLibVersion = '26.1.0'
 
 dependencies {
     api fileTree(include: ['*.jar'], dir: 'libs')
-    testImplementation 'junit:junit:4.12'
     api "com.android.support:support-v4:${supportLibVersion}"
     api "com.android.support:appcompat-v7:${supportLibVersion}"
 
     api "com.android.support:support-annotations:${supportLibVersion}"
     api "com.android.support:recyclerview-v7:${supportLibVersion}"
     api 'com.github.chrisbanes:PhotoView:2.0.0'
-    provided 'com.github.bumptech.glide:glide:4.3.0'
-    provided 'com.squareup.picasso:picasso:2.5.0'
+    compileOnly 'com.github.bumptech.glide:glide:4.3.0'
+    compileOnly 'com.squareup.picasso:picasso:2.5.0'
     // Rx
     api 'io.reactivex.rxjava2:rxandroid:2.0.1'
     api 'io.reactivex.rxjava2:rxjava:2.1.0'

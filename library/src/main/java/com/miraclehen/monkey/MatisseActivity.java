@@ -164,7 +164,7 @@ public class MatisseActivity extends AppCompatActivity implements
         mAlbumsSpinner.setAdapter(mAlbumsAdapter);
         mAlbumCollection.onCreate(this, this);
         mAlbumCollection.onRestoreInstanceState(savedInstanceState);
-        mAlbumCollection.loadAlbums();
+//        mAlbumCollection.loadAlbums();
 
         if (Build.VERSION.SDK_INT < 22) {
             loadAlbums();
