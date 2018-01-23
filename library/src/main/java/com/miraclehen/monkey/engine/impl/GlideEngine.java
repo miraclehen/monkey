@@ -31,21 +31,14 @@ import com.miraclehen.monkey.engine.ImageEngine;
  */
 
 public class GlideEngine implements ImageEngine {
-    private RequestOptions thumbnailOptions;
-    private RequestOptions gifThumbnailOptions;
-
-    private RequestOptions imageOptions;
-    private RequestOptions gifImageOptions;
 
     @Override
     public void loadThumbnail(Context context, int resize, Drawable placeholder, ImageView imageView, Uri uri) {
-        if (thumbnailOptions == null) {
-            thumbnailOptions = new RequestOptions()
-                    .placeholder(placeholder)
-                    .override(resize, resize)
-                    .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
-                    .centerCrop();
-        }
+        RequestOptions thumbnailOptions = new RequestOptions()
+                .placeholder(placeholder)
+                .override(resize, resize)
+                .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
+                .centerCrop();
         Glide.with(context)
                 .load(uri)
                 .apply(thumbnailOptions)
@@ -56,13 +49,11 @@ public class GlideEngine implements ImageEngine {
     @Override
     public void loadGifThumbnail(Context context, int resize, Drawable placeholder, ImageView imageView,
                                  Uri uri) {
-        if (gifThumbnailOptions == null) {
-            gifThumbnailOptions = new RequestOptions()
-                    .placeholder(placeholder)
-                    .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
-                    .override(resize, resize)
-                    .centerCrop();
-        }
+        RequestOptions gifThumbnailOptions = new RequestOptions()
+                .placeholder(placeholder)
+                .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
+                .override(resize, resize)
+                .centerCrop();
         Glide.with(context)
                 .load(uri)
                 .apply(gifThumbnailOptions)
@@ -71,11 +62,10 @@ public class GlideEngine implements ImageEngine {
     }
 
     @Override
-    public void loadImage(Context context, ImageView imageView, Uri uri) {
-        if (imageOptions == null) {
-            imageOptions = new RequestOptions()
-                    .diskCacheStrategy(DiskCacheStrategy.RESOURCE);
-        }
+    public void loadImage(Context context, int resizeX, int resizeY, ImageView imageView, Uri uri) {
+        RequestOptions imageOptions = new RequestOptions()
+                .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
+                .override(resizeX,resizeY);
         Glide.with(context)
                 .load(uri)
                 .apply(imageOptions)
@@ -83,11 +73,10 @@ public class GlideEngine implements ImageEngine {
     }
 
     @Override
-    public void loadGifImage(Context context, ImageView imageView, Uri uri) {
-        if (gifImageOptions == null) {
-            gifImageOptions = new RequestOptions()
-                    .diskCacheStrategy(DiskCacheStrategy.RESOURCE);
-        }
+    public void loadGifImage(Context context, int resizeX, int resizeY, ImageView imageView, Uri uri) {
+        RequestOptions gifImageOptions = new RequestOptions()
+                .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
+                .override(resizeX,resizeY);
         Glide.with(context)
                 .load(uri)
                 .apply(gifImageOptions)

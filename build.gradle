@@ -21,6 +21,9 @@ allprojects {
         google()
         jcenter()
         maven { url "https://jitpack.io" }
+        maven {
+            url 'https://oss.sonatype.org/content/repositories/snapshots/'
+        }
     }
 }
 
@@ -40,7 +43,7 @@ ext{
 
     //common
     glideVersion = '4.3.0'
-    picassoVersion = '2.5.2'
+    picassoVersion = '3.0.0-SNAPSHOT'
 
 }
 

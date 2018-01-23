@@ -52,19 +52,23 @@ public interface ImageEngine {
      * Load a static image resource.
      *
      * @param context   Context
+     * @param resizeX   Desired x-size of the origin image
+     * @param resizeY   Desired y-size of the origin image
      * @param imageView ImageView widget
      * @param uri       Uri of the loaded image
      */
-    void loadImage(Context context, ImageView imageView, Uri uri);
+    void loadImage(Context context, int resizeX, int resizeY, ImageView imageView, Uri uri);
 
     /**
      * Load a gif image resource.
      *
      * @param context   Context
+     * @param resizeX   Desired x-size of the origin image
+     * @param resizeY   Desired y-size of the origin image
      * @param imageView ImageView widget
      * @param uri       Uri of the loaded image
      */
-    void loadGifImage(Context context, ImageView imageView, Uri uri);
+    void loadGifImage(Context context, int resizeX, int resizeY, ImageView imageView, Uri uri);
 
     /**
      * Whether this implementation supports animated gif.

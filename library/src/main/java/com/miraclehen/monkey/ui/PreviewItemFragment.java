@@ -17,6 +17,7 @@ package com.miraclehen.monkey.ui;
 
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -29,6 +30,7 @@ import com.github.chrisbanes.photoview.PhotoView;
 import com.miraclehen.monkey.R;
 import com.miraclehen.monkey.entity.MediaItem;
 import com.miraclehen.monkey.entity.SelectionSpec;
+import com.miraclehen.monkey.utils.PhotoMetadataUtils;
 
 /**
  * 图片预览页
@@ -80,12 +82,12 @@ public class PreviewItemFragment extends Fragment {
         PhotoView image = view.findViewById(R.id.image_view);
 //        image.setDisplayType(ImageViewTouchBase.DisplayType.FIT_TO_SCREEN);
 
-//        Point size = PhotoMetadataUtils.getBitmapSize(item.getContentUri(), getActivity());
+        Point size = PhotoMetadataUtils.getBitmapSize(item.getContentUri(), getActivity());
         if (item.isGif()) {
-            SelectionSpec.getInstance().imageEngine.loadGifImage(getContext(), image,
+            SelectionSpec.getInstance().imageEngine.loadGifImage(getContext(), size.x, size.y, image,
                     item.getContentUri());
         } else {
-            SelectionSpec.getInstance().imageEngine.loadImage(getContext(), image,
+            SelectionSpec.getInstance().imageEngine.loadImage(getContext(), size.x, size.y, image,
                     item.getContentUri());
         }
     }

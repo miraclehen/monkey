@@ -184,7 +184,7 @@ public class MatisseActivity extends AppCompatActivity implements
     }
 
     private void initToolbarLayout() {
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar =  findViewById(R.id.toolbar);
         if (mSpec.toolbarLayoutId == -1) {
             setSupportActionBar(toolbar);
             ActionBar actionBar = getSupportActionBar();

@@ -31,8 +31,8 @@ public class PicassoEngine implements ImageEngine {
 
     @Override
     public void loadThumbnail(Context context, int resize, Drawable placeholder, ImageView imageView, Uri uri) {
-        Picasso.with(context)
-                .load(uri)
+        Picasso picasso = new Picasso.Builder(context).build();
+        picasso.load(uri)
                 .placeholder(placeholder)
                 .resize(resize, resize)
                 .centerCrop()
@@ -45,20 +45,20 @@ public class PicassoEngine implements ImageEngine {
         loadThumbnail(context, resize, placeholder, imageView, uri);
     }
 
+
     @Override
-    public void loadImage(Context context, ImageView imageView, Uri uri) {
-        Picasso.with(context)
-                .load(uri)
-                .fit()
-                .priority(Picasso.Priority.HIGH)
-                .centerInside()
+    public void loadImage(Context context, int resizeX, int resizeY, ImageView imageView, Uri uri) {
+        Picasso picasso = new Picasso.Builder(context).build();
+        picasso.load(uri)
+                .resize(resizeX, resizeY)
                 .into(imageView);
     }
 
     @Override
-    public void loadGifImage(Context context, ImageView imageView, Uri uri) {
-        loadImage(context, imageView, uri);
+    public void loadGifImage(Context context, int resizeX, int resizeY, ImageView imageView, Uri uri) {
+        loadImage(context, resizeX, resizeY, imageView, uri);
     }
+
 
     @Override
     public boolean supportAnimatedGif() {

@@ -60,10 +60,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.zhihu:
                 Matisse.from(MainActivity.this)
                         .choose(MimeType.ofImageExcludeGif())
-                        .countable(true)
+                        .countable(false)
                         .spanCount(4)
                         .captureFinishBack(false)
-                        .captureType(CaptureType.None)
+                        .captureType(CaptureType.Image)
                         .captureStrategy(new CaptureStrategy(true, "com.miraclehen.sample.fileprovider"))
                         .maxSelectable(20)
                         .groupByDate(true)
