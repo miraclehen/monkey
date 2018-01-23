@@ -630,7 +630,6 @@ public class MatisseActivity extends AppCompatActivity implements
                         mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_VIDEO, MediaStoreCompat.CaptureType.Video);
                     }
                 }
-                mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_VIDEO, MediaStoreCompat.CaptureType.Video);
             } else {
                 //被拒绝
                 Toast.makeText(MatisseActivity.this, "无法获取到拍摄权限", Toast.LENGTH_LONG).show();
