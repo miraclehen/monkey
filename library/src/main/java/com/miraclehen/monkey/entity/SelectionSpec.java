@@ -166,7 +166,7 @@ public final class SelectionSpec {
         captureStrategy = null;
         captureFinishBack = false;
         spanCount = 3;
-        thumbnailScale = 1f;
+        thumbnailScale = 0.5f;
         imageEngine = new GlideEngine();
         groupByDate = false;
         singleResultModel = false;

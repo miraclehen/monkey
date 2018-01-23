@@ -29,6 +29,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
@@ -64,7 +65,6 @@ import com.miraclehen.monkey.utils.MediaStoreCompat;
 import java.io.File;
 import java.util.ArrayList;
 
-import io.reactivex.functions.Consumer;
 
 /**
  * Main Activity to display albums and media content (images/videos) in each album
@@ -72,21 +72,31 @@ import io.reactivex.functions.Consumer;
  */
 public class MatisseActivity extends AppCompatActivity implements
         AlbumCollection.AlbumCallbacks, AdapterView.OnItemSelectedListener,
-        MediaSelectionFragment.SelectionProvider, View.OnClickListener,
-        UICallback {
+        MediaSelectionFragment.SelectionProvider, View.OnClickListener, UICallback {
 
     public static final String TAG = MatisseActivity.class.getSimpleName();
+    private static final int SCAN_COMPLETE_WHAT_CODE = 0x21;
 
+    /**
+     * 权限相关
+     */
     public static final int PERMISSION_REQUEST_READ_EXTERNAL_STORAGE = 0x11;
     public static final int PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE = 0x12;
     public static final int PERMISSION_REQUEST_CAMERA = 0x13;
 
+    /**
+     * 传递数据相关
+     */
     public static final String EXTRA_RESULT_SELECTION_ITEM = "extra_result_selection_item";
     public static final String EXTRA_CONTENT_URI = "extra_content_uri";
     public static final String EXTRA_CONTENT_PATH = "extra_content_path";
 
+    /**
+     * 请求码相关
+     */
     private static final int REQUEST_CODE_PREVIEW = 23;
     private static final int REQUEST_CODE_CAPTURE = 24;
+
 
     private final AlbumCollection mAlbumCollection = new AlbumCollection();
     private MediaStoreCompat mMediaStoreCompat;
@@ -220,15 +230,19 @@ public class MatisseActivity extends AppCompatActivity implements
 
     @Override
     protected void onDestroy() {
+        //移除拍摄相关callback
+        scanCompleteHandler.removeMessages(SCAN_COMPLETE_WHAT_CODE);
         if (mOnScanCompletedCallback != null) {
             mOnScanCompletedCallback.clearCallback();
         }
         mOnScanCompletedCallback = null;
+
         mSpec.checkListener = null;
+
         try {
             mAlbumCollection.onDestroy();
             super.onDestroy();
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -298,16 +312,29 @@ public class MatisseActivity extends AppCompatActivity implements
             intent.setData(contentUri);
             sendBroadcast(intent);
 
-            mOnScanCompletedCallback = new OnScanCompletedListenerImpl(new Consumer<String>() {
+            mOnScanCompletedCallback = new OnScanCompletedListenerImpl(new OnScanCompletedListenerImpl.ScanCompleteCallback() {
                 @Override
-                public void accept(String s) throws Exception {
-                    //重新加载并且处理拍摄的数据
-                    loadAndProcessCaptureLoader(path);
+                public void callback(String path, Uri uri) {
+                    scanCompleteHandler.removeMessages(SCAN_COMPLETE_WHAT_CODE);
+                    Message message = Message.obtain();
+                    message.obj = path;
+                    message.what = SCAN_COMPLETE_WHAT_CODE;
+                    scanCompleteHandler.sendMessage(message);
                 }
             });
             MediaScannerConnection.scanFile(getApplicationContext(), new String[]{path}, null, mOnScanCompletedCallback);
         }
     }
+
+    Handler scanCompleteHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            if (msg.obj != null) {
+                //重新加载并且处理拍摄的数据
+                loadAndProcessCaptureLoader((String) msg.obj);
+            }
+        }
+    };
 
     /**
      * 重新加载并且处理拍摄的数据

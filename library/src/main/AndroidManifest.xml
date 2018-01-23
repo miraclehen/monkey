@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.CAMERA" />
 
-    <application>
+    <application android:name=".MonkeyApplication">
         <activity android:name=".MatisseActivity"
             android:theme="@android:style/Theme.Translucent">
             <intent-filter>
