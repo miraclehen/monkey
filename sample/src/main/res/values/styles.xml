@@ -39,4 +39,13 @@
         <item name="android:windowFullscreen">true</item>
     </style>
 
+
+    <style name="ZhihuTheme1" parent="Matisse.Zhihu">
+        <item name="colorPrimary">@color/material_orange2</item>
+        <item name="colorPrimaryDark">@color/material_orange</item>
+        <item name="preview.bottomToolbar.apply.textColor">@color/material_orange</item>
+        <item name="item.checkCircle.backgroundColor">@color/material_orange2</item>
+        <item name="bottomToolbar.apply.textColor">@color/material_orange</item>
+    </style>
+
 </resources>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/material_orange"
+    android:paddingBottom="10dp"
+    android:paddingTop="10dp">
+
+
+    <ImageButton
+        android:layout_width="30dp"
+        android:id="@+id/finish_action"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start|center_vertical"
+        android:background="@android:color/transparent"
+        android:src="@drawable/back" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        android:id="@+id/anchor_action"
+        android:drawableRight="@drawable/ic_arrow_drop_down_white_24dp"
+        tools:text="全部" />
+
+</FrameLayout>

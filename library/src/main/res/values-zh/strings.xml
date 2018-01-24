@@ -36,4 +36,5 @@
     <string name="date_format">yyyy年MM月dd日</string>
     <string name="today">今天</string>
     <string name="loading">加载中..</string>
+
 </resources>

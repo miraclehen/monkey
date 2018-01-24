@@ -43,7 +43,7 @@ ext{
 
     //common
     glideVersion = '4.3.0'
-    picassoVersion = '3.0.0-SNAPSHOT'
+    picassoVersion = '2.5.2'
 
 }
 

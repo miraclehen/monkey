@@ -35,7 +35,6 @@ import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -43,8 +42,10 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.widget.AdapterView;
 import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -70,11 +71,11 @@ import java.util.ArrayList;
  * Main Activity to display albums and media content (images/videos) in each album
  * and also support media selecting operations.
  */
-public class MatisseActivity extends AppCompatActivity implements
+public class MonkeyActivity extends AppCompatActivity implements
         AlbumCollection.AlbumCallbacks, AdapterView.OnItemSelectedListener,
         MediaSelectionFragment.SelectionProvider, View.OnClickListener, UICallback {
 
-    public static final String TAG = MatisseActivity.class.getSimpleName();
+    public static final String TAG = MonkeyActivity.class.getSimpleName();
     private static final int SCAN_COMPLETE_WHAT_CODE = 0x21;
 
     /**
@@ -111,9 +112,13 @@ public class MatisseActivity extends AppCompatActivity implements
     private View mContainer;
     private View mEmptyView;
     private Album mCurrentAlbum;
-    private FrameLayout mBottomToolbar;
+
+    //工具条部分
+    private FrameLayout mBottomBar;
     private FrameLayout mToolbarWrapperLayout;
     private TextView mAnchorView;
+    private Toolbar mDefaultToolbar;
+    private ViewGroup mCustomToolbar;
 
 
     private OnScanCompletedListenerImpl mOnScanCompletedCallback;
@@ -124,13 +129,19 @@ public class MatisseActivity extends AppCompatActivity implements
         mSpec = SelectionSpec.getInstance();
         setTheme(mSpec.themeId);
         super.onCreate(savedInstanceState);
-
-//        UIUtils.immersiveStatusBar(getWindow(), 0);
-
         setContentView(R.layout.activity_matisse);
 
         if (mSpec.needOrientationRestriction()) {
             setRequestedOrientation(mSpec.orientation);
+        }
+
+        if (mSpec.toolbarLayoutId == -1) {
+            //使用默认的toolbar布局
+            mDefaultToolbar = (Toolbar) ((ViewStub) findViewById(R.id.toolbar_vs)).inflate();
+            initDefaultToolbar();
+        } else {
+            mCustomToolbar = (ViewGroup) LayoutInflater.from(MonkeyActivity.this).inflate(mSpec.toolbarLayoutId, null);
+            initCustomToolbar();
         }
 
         if (mSpec.isCapture()) {
@@ -142,35 +153,17 @@ public class MatisseActivity extends AppCompatActivity implements
             mMediaStoreCompat.onRestoreInstanceState(savedInstanceState);
         }
 
-        mButtonPreview = findViewById(R.id.button_preview);
-        mButtonApply = findViewById(R.id.button_apply);
-        mButtonPreview.setOnClickListener(this);
-        mButtonApply.setOnClickListener(this);
-        mContainer = findViewById(R.id.container);
-        mEmptyView = findViewById(R.id.empty_view);
-        mBottomToolbar = findViewById(R.id.bottom_toolbar);
-        mToolbarWrapperLayout = findViewById(R.id.toolbar_layout);
-        mAnchorView = findViewById(R.id.selected_album);
-
         //初始化布局头部布局
-        initToolbarLayout();
+        initViews();
+        mAlbumCollection.onRestoreInstanceState(savedInstanceState);
 
         if (mSpec.singleResultModel) {
             //如果是单选模式。底部不需要显示
-            mBottomToolbar.setVisibility(View.GONE);
+            mBottomBar.setVisibility(View.GONE);
         }
 
         mSelectedCollection.onCreate(savedInstanceState);
         updateBottomToolbar();
-
-        mAlbumsAdapter = new AlbumsAdapter(this, null, false);
-        mAlbumsSpinner = new AlbumsSpinner(this);
-        mAlbumsSpinner.setOnItemSelectedListener(this);
-        mAlbumsSpinner.setSelectedTextView(mAnchorView);
-        mAlbumsSpinner.setPopupAnchorView(mAnchorView);
-        mAlbumsSpinner.setAdapter(mAlbumsAdapter);
-        mAlbumCollection.onCreate(this, this);
-        mAlbumCollection.onRestoreInstanceState(savedInstanceState);
 
         if (Build.VERSION.SDK_INT < 22) {
             loadAlbums();
@@ -183,38 +176,67 @@ public class MatisseActivity extends AppCompatActivity implements
         mAlbumCollection.loadAlbums();
     }
 
-    private void initToolbarLayout() {
-        Toolbar toolbar =  findViewById(R.id.toolbar);
-        if (mSpec.toolbarLayoutId == -1) {
-            setSupportActionBar(toolbar);
-            ActionBar actionBar = getSupportActionBar();
-            if (actionBar != null) {
-                actionBar.setDisplayShowTitleEnabled(false);
-                actionBar.setDisplayHomeAsUpEnabled(true);
+    private void initViews() {
+        mButtonPreview = findViewById(R.id.button_preview);
+        mButtonApply = findViewById(R.id.button_apply);
+        mButtonPreview.setOnClickListener(this);
+        mButtonApply.setOnClickListener(this);
+        mContainer = findViewById(R.id.container);
+        mEmptyView = findViewById(R.id.empty_view);
+        mBottomBar = findViewById(R.id.bottom_toolbar);
+
+        mAlbumsAdapter = new AlbumsAdapter(this, null, false);
+        mAlbumsSpinner = new AlbumsSpinner(this);
+        mAlbumsSpinner.setOnItemSelectedListener(this);
+        mAlbumsSpinner.setSelectedTextView(mAnchorView);
+        mAlbumsSpinner.setPopupAnchorView(mAnchorView);
+        mAlbumsSpinner.setAdapter(mAlbumsAdapter);
+        mAlbumCollection.onCreate(this, this);
+
+    }
+
+    /**
+     * 初始化默认的toolbar
+     */
+    private void initDefaultToolbar() {
+        mToolbarWrapperLayout = findViewById(R.id.wrap_toolbar_layout);
+        mAnchorView = findViewById(R.id.anchor_action);
+
+        setSupportActionBar(mDefaultToolbar);
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayShowTitleEnabled(false);
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        Drawable navigationIcon = mDefaultToolbar.getNavigationIcon();
+        TypedArray ta = getTheme().obtainStyledAttributes(new int[]{R.attr.album_element_color});
+        int color = ta.getColor(0, 0);
+        ta.recycle();
+        navigationIcon.setColorFilter(color, PorterDuff.Mode.SRC_IN);
+    }
+
+    /**
+     * 初始化自定义的toolbar
+     */
+    private void initCustomToolbar() {
+        mToolbarWrapperLayout = findViewById(R.id.wrap_toolbar_layout);
+        mToolbarWrapperLayout.addView(mCustomToolbar, new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        View finishView = mCustomToolbar.findViewById(R.id.finish_action);
+        if (finishView == null) {
+            throw new IllegalArgumentException(mSpec.toolbarLayoutId
+                    + " must be have a view that set android:id=\"@+id/finish_action\" , which be used finish the MonkeyActivity");
+        }
+        finishView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MonkeyActivity.this.finish();
             }
-            Drawable navigationIcon = toolbar.getNavigationIcon();
-            TypedArray ta = getTheme().obtainStyledAttributes(new int[]{R.attr.album_element_color});
-            int color = ta.getColor(0, 0);
-            ta.recycle();
-            if (navigationIcon != null) {
-                navigationIcon.setColorFilter(color, PorterDuff.Mode.SRC_IN);
-            }
-        } else {
-            toolbar.setVisibility(View.GONE);
-            View rootView = LayoutInflater.from(this).inflate(mSpec.toolbarLayoutId, null);
-            mToolbarWrapperLayout.addView(rootView, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT));
-            View backView = rootView.findViewById(mSpec.backViewId);
-            backView.setVisibility(View.VISIBLE);
-            backView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    MatisseActivity.this.finish();
-                }
-            });
-            mAnchorView = (TextView) findViewById(mSpec.anchorViewId);
-            mAnchorView.setCompoundDrawablesWithIntrinsicBounds(null, null,
-                    ContextCompat.getDrawable(this, R.drawable.ic_arrow_drop_down_white_24dp), null);
+        });
+
+        mAnchorView = mCustomToolbar.findViewById(R.id.anchor_action);
+        if (mAnchorView == null) {
+            throw new IllegalArgumentException(mSpec.toolbarLayoutId
+                    + " must be have a view that set android:id=\"@+id/anchor_action\" , which be used anchor the Spinner");
         }
     }
 
@@ -431,7 +453,7 @@ public class MatisseActivity extends AppCompatActivity implements
             @Override
             public void run() {
                 cursor.moveToPosition(mAlbumCollection.getCurrentSelection());
-                mAlbumsSpinner.setSelection(MatisseActivity.this,
+                mAlbumsSpinner.setSelection(MonkeyActivity.this,
                         mAlbumCollection.getCurrentSelection());
                 mCurrentAlbum = Album.valueOf(cursor);
                 if (mCurrentAlbum.isAll() && SelectionSpec.getInstance().isCapture()) {
@@ -534,19 +556,19 @@ public class MatisseActivity extends AppCompatActivity implements
      */
     @RequiresApi(22)
     private void requestPhotoCameraPermission(CaptureType captureType) {
-        if (ActivityCompat.checkSelfPermission(MatisseActivity.this, Manifest.permission.CAMERA)
+        if (ActivityCompat.checkSelfPermission(MonkeyActivity.this, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
                 PermissionExplainDialog.newInstance("应用需要访问你的相机的权限", new PermissionExplainDialog.OnDialogPositiveButtonClickListener() {
                     @Override
                     public void onClick() {
-                        ActivityCompat.requestPermissions(MatisseActivity.this,
+                        ActivityCompat.requestPermissions(MonkeyActivity.this,
                                 new String[]{Manifest.permission.CAMERA},
                                 PERMISSION_REQUEST_CAMERA);
                     }
                 }).show(getSupportFragmentManager(), PermissionExplainDialog.class.getSimpleName());
             } else {
-                ActivityCompat.requestPermissions(MatisseActivity.this,
+                ActivityCompat.requestPermissions(MonkeyActivity.this,
                         new String[]{Manifest.permission.CAMERA},
                         PERMISSION_REQUEST_CAMERA);
             }
@@ -559,20 +581,20 @@ public class MatisseActivity extends AppCompatActivity implements
 
     @RequiresApi(22)
     private void requestReadStoragePermission() {
-        if (ActivityCompat.checkSelfPermission(MatisseActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)
+        if (ActivityCompat.checkSelfPermission(MonkeyActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
                 //show tip
                 PermissionExplainDialog.newInstance("应用需要访问你的相册的权限,来展示你手机中的相册数据", new PermissionExplainDialog.OnDialogPositiveButtonClickListener() {
                     @Override
                     public void onClick() {
-                        ActivityCompat.requestPermissions(MatisseActivity.this,
+                        ActivityCompat.requestPermissions(MonkeyActivity.this,
                                 new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                                 PERMISSION_REQUEST_READ_EXTERNAL_STORAGE);
                     }
                 }).show(getSupportFragmentManager(), PermissionExplainDialog.class.getSimpleName());
             } else {
-                ActivityCompat.requestPermissions(MatisseActivity.this,
+                ActivityCompat.requestPermissions(MonkeyActivity.this,
                         new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                         PERMISSION_REQUEST_READ_EXTERNAL_STORAGE);
             }
@@ -589,19 +611,19 @@ public class MatisseActivity extends AppCompatActivity implements
      */
     @RequiresApi(22)
     private void requestWriteStoragePermission(CaptureType captureType) {
-        if (ActivityCompat.checkSelfPermission(MatisseActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        if (ActivityCompat.checkSelfPermission(MonkeyActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                 PermissionExplainDialog.newInstance("应用需要访问你的相册的权限，来存储你的拍照文件", new PermissionExplainDialog.OnDialogPositiveButtonClickListener() {
                     @Override
                     public void onClick() {
-                        ActivityCompat.requestPermissions(MatisseActivity.this,
+                        ActivityCompat.requestPermissions(MonkeyActivity.this,
                                 new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                                 PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE);
                     }
                 }).show(getSupportFragmentManager(), PermissionExplainDialog.class.getSimpleName());
             } else {
-                ActivityCompat.requestPermissions(MatisseActivity.this,
+                ActivityCompat.requestPermissions(MonkeyActivity.this,
                         new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                         PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE);
             }
@@ -619,7 +641,7 @@ public class MatisseActivity extends AppCompatActivity implements
                 loadAlbums();
             } else {
                 //权限被拒绝
-                Toast.makeText(MatisseActivity.this, "无法获取到访问你的相册权限", Toast.LENGTH_LONG).show();
+                Toast.makeText(MonkeyActivity.this, "无法获取到访问你的相册权限", Toast.LENGTH_LONG).show();
             }
         } else if (requestCode == PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE) {
             //请求写入权限
@@ -627,7 +649,7 @@ public class MatisseActivity extends AppCompatActivity implements
                 mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_CAPTURE);
             } else {
                 //被拒绝
-                Toast.makeText(MatisseActivity.this, "无法获取到写入文件权限", Toast.LENGTH_LONG).show();
+                Toast.makeText(MonkeyActivity.this, "无法获取到写入文件权限", Toast.LENGTH_LONG).show();
             }
         } else if (requestCode == PERMISSION_REQUEST_CAMERA) {
             //请求相机权限
@@ -635,7 +657,7 @@ public class MatisseActivity extends AppCompatActivity implements
                 mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_CAPTURE);
             } else {
                 //被拒绝
-                Toast.makeText(MatisseActivity.this, "无法获取到拍摄权限", Toast.LENGTH_LONG).show();
+                Toast.makeText(MonkeyActivity.this, "无法获取到拍摄权限", Toast.LENGTH_LONG).show();
             }
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);

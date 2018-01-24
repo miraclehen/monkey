@@ -171,9 +171,8 @@ public class AlbumMediaAdapter extends
         }
 
         //回调 获取日期最新的一条数据
-        CatchSpecCallbackInvoker.invokeNewestCallback(mAlbum,mCursorBeanList,newCursor);
+        CatchSpecCallbackInvoker.invokeNewestCallback(mAlbum, mCursorBeanList, newCursor);
     }
-
 
 
     /**
@@ -250,7 +249,7 @@ public class AlbumMediaAdapter extends
         } else {
             if (viewType == VIEW_TYPE_MEDIA) {
                 //正常的Media视图
-                View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.media_grid_item,
+                MediaGrid v = (MediaGrid) LayoutInflater.from(parent.getContext()).inflate(R.layout.media_grid_item,
                         parent, false);
                 return new MediaViewHolder(v);
             } else if (viewType == VIEW_TYPE_DATE) {
@@ -279,7 +278,6 @@ public class AlbumMediaAdapter extends
                 moveToPosition(position);
                 onBindViewHolder(holder, mCursor);
             }
-
         }
     }
 
@@ -303,10 +301,10 @@ public class AlbumMediaAdapter extends
             MediaViewHolder mediaViewHolder = (MediaViewHolder) holder;
 
             final MediaItem item = MediaItem.valueOf(cursor);
-//            if (item.getUploaded() == -1) {
-//                //如果还没确定这张是否上传过
-//                item.setUploaded(mSelectionSpec.extraIdMap.containsKey(item.getId()) ? 1 : 0);
-//            }
+
+            if (mSelectionSpec.inflateItemViewCallback != null) {
+                mSelectionSpec.inflateItemViewCallback.callback(item, (MediaGrid) holder.itemView);
+            }
 
             mediaViewHolder.mMediaGrid.preBindMedia(new MediaGrid.PreBindInfo(
                     getImageResize(mediaViewHolder.mMediaGrid.getContext()),
@@ -423,8 +421,6 @@ public class AlbumMediaAdapter extends
         if (mSelectionSpec.checkListener != null) {
             mSelectionSpec.checkListener.onCheck(mediaItem, check);
         }
-
-
     }
 
     @Override
@@ -516,6 +512,7 @@ public class AlbumMediaAdapter extends
 
     /**
      * 是否可以选中
+     *
      * @param context
      * @param item
      * @return

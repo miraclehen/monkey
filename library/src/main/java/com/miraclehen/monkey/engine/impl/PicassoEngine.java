@@ -31,8 +31,8 @@ public class PicassoEngine implements ImageEngine {
 
     @Override
     public void loadThumbnail(Context context, int resize, Drawable placeholder, ImageView imageView, Uri uri) {
-        Picasso picasso = new Picasso.Builder(context).build();
-        picasso.load(uri)
+        Picasso.with(context)
+                .load(uri)
                 .placeholder(placeholder)
                 .resize(resize, resize)
                 .centerCrop()
@@ -48,10 +48,10 @@ public class PicassoEngine implements ImageEngine {
 
     @Override
     public void loadImage(Context context, int resizeX, int resizeY, ImageView imageView, Uri uri) {
-        Picasso picasso = new Picasso.Builder(context).build();
-        picasso.load(uri)
+        Picasso.with(context)
+                .load(uri)
                 .resize(resizeX, resizeY)
-                .into(imageView);
+                .centerInside().into(imageView);
     }
 
     @Override

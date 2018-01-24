@@ -26,6 +26,7 @@ import com.miraclehen.monkey.engine.ImageEngine;
 import com.miraclehen.monkey.engine.impl.GlideEngine;
 import com.miraclehen.monkey.filter.Filter;
 import com.miraclehen.monkey.listener.CatchSpecMediaItemCallback;
+import com.miraclehen.monkey.listener.InflateItemViewCallback;
 import com.miraclehen.monkey.listener.OnItemCheckChangeListener;
 
 import java.util.ArrayList;
@@ -111,10 +112,10 @@ public final class SelectionSpec {
      */
     public boolean singleResultModel;
 
-    //======待修改
+    /**
+     * 自定义toolbar的布局
+     */
     public int toolbarLayoutId;
-    public int backViewId;
-    public int anchorViewId;
 
     /**
      * 已选中的MediaItem
@@ -135,6 +136,12 @@ public final class SelectionSpec {
      * 获取日期最新的一条数据MediaItem之后回调相应的方法
      */
     public CatchSpecMediaItemCallback.newestCallback catchNewestSpecCallback;
+
+    /**
+     * 生成item布局时候回调
+     * 可以对布局进行调整
+     */
+    public InflateItemViewCallback inflateItemViewCallback;
 
 
     private SelectionSpec() {
@@ -160,10 +167,10 @@ public final class SelectionSpec {
         captureType = CaptureType.None;
         captureStrategy = null;
         captureFinishBack = false;
-        spanCount = 3;
+        spanCount = 4;
         thumbnailScale = 0.85f;
         imageEngine = new GlideEngine();
-        groupByDate = false;
+        groupByDate = true;
         singleResultModel = false;
         toolbarLayoutId = -1;
         selectedDataList.clear();
@@ -171,6 +178,7 @@ public final class SelectionSpec {
         checkListener = null;
         catchDateSpecCallback = null;
         catchNewestSpecCallback = null;
+        inflateItemViewCallback = null;
     }
 
     public boolean singleSelectionModeEnabled() {

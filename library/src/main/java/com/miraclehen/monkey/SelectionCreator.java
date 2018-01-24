@@ -32,6 +32,7 @@ import com.miraclehen.monkey.entity.MediaItem;
 import com.miraclehen.monkey.entity.SelectionSpec;
 import com.miraclehen.monkey.filter.Filter;
 import com.miraclehen.monkey.listener.CatchSpecMediaItemCallback;
+import com.miraclehen.monkey.listener.InflateItemViewCallback;
 import com.miraclehen.monkey.listener.OnItemCheckChangeListener;
 
 import java.lang.annotation.Retention;
@@ -63,7 +64,7 @@ import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT;
  */
 @SuppressWarnings("unused")
 public final class SelectionCreator {
-    private final Matisse mMatisse;
+    private final Monkey mMatisse;
     private final SelectionSpec mSelectionSpec;
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -96,7 +97,7 @@ public final class SelectionCreator {
      * @param mimeTypes MIME type set to select. 如果为true，那么在mineType显示图片和视频的情况下，用户可以同时选择图片或者视频。
      *                  false则只能选择图片或者视频其中之一
      */
-    SelectionCreator(Matisse matisse, @NonNull Set<MimeType> mimeTypes) {
+    SelectionCreator(Monkey matisse, @NonNull Set<MimeType> mimeTypes) {
         mMatisse = matisse;
         mSelectionSpec = SelectionSpec.getCleanInstance();
         mSelectionSpec.mimeTypeSet = mimeTypes;
@@ -173,6 +174,8 @@ public final class SelectionCreator {
 
     /**
      * 拍摄类型
+     * 默认值为{#link CaptureType.None}
+     *
      * @param captureType
      * @return
      */
@@ -183,6 +186,8 @@ public final class SelectionCreator {
 
     /**
      * 拍摄后是否直接结束返回
+     * 默认值为true
+     *
      * @param finishBack
      * @return
      */
@@ -258,7 +263,7 @@ public final class SelectionCreator {
             return;
         }
 
-        Intent intent = new Intent(activity, MatisseActivity.class);
+        Intent intent = new Intent(activity, MonkeyActivity.class);
 
         Fragment fragment = mMatisse.getFragment();
         if (fragment != null) {
@@ -270,7 +275,8 @@ public final class SelectionCreator {
     }
 
     /**
-     * Determines whether the photo list is group by date.
+     * 根据日期分组
+     * 默认为true
      *
      * @param groupByDate true for group by date list and false for nothing
      * @return {@link SelectionCreator} for fluent API.
@@ -282,6 +288,7 @@ public final class SelectionCreator {
 
     /**
      * 初始化已选中的MediaItem列表
+     *
      * @param list
      * @return
      */
@@ -295,6 +302,7 @@ public final class SelectionCreator {
 
     /**
      * Item被勾选或者反勾选监听器
+     *
      * @param listener 监听器
      * @return SelectionCreator
      */
@@ -319,23 +327,22 @@ public final class SelectionCreator {
     /**
      * 顶部头部布局Id
      *
-     * @param layout
+     * @param toolbarLayout
      * @return
      */
-    public SelectionCreator toolbarLayoutId(@LayoutRes int layout, int backViewId, int anchorViewId) {
-        mSelectionSpec.toolbarLayoutId = layout;
-        mSelectionSpec.backViewId = backViewId;
-        mSelectionSpec.anchorViewId = anchorViewId;
+    public SelectionCreator toolbarLayoutId(@LayoutRes int toolbarLayout) {
+        mSelectionSpec.toolbarLayoutId = toolbarLayout;
         return this;
     }
 
     /**
      * 获取日期最新的一条数据MediaItem之后回调相应的方法
+     *
      * @param callback CatchSpecMediaItemCallback.newestCallback
      * @return SelectionCreator
      */
     public SelectionCreator catchNewestCallback(CatchSpecMediaItemCallback.newestCallback callback) {
-        if ( callback == null) {
+        if (callback == null) {
             throw new IllegalArgumentException("CatchSpecMediaItemCallback.newestCallback not be null ");
         }
         mSelectionSpec.catchNewestSpecCallback = callback;
@@ -344,14 +351,30 @@ public final class SelectionCreator {
 
     /**
      * 获取指定日期区间的数据MediaItem之后回调相应的方法
+     *
      * @param callback CatchSpecMediaItemCallback.dateCallback
      * @return SelectionCreator
      */
     public SelectionCreator catchSpecDateCallback(CatchSpecMediaItemCallback.dateCallback callback) {
-        if ( callback == null) {
+        if (callback == null) {
             throw new IllegalArgumentException("CatchSpecMediaItemCallback.dateCallback not be null ");
         }
         mSelectionSpec.catchDateSpecCallback = callback;
+        return this;
+    }
+
+    /**
+     * 生成item布局时候回调
+     * 可以对布局进行调整
+     *
+     * @param callback
+     * @return
+     */
+    public SelectionCreator inflateItemViewCallback(InflateItemViewCallback callback) {
+        if (callback == null) {
+            throw new IllegalArgumentException("InflateItemViewCallback not be null ");
+        }
+        mSelectionSpec.inflateItemViewCallback = callback;
         return this;
     }
 }

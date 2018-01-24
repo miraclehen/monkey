@@ -16,7 +16,6 @@
 package com.miraclehen.monkey.model;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -185,6 +184,7 @@ public class SelectedItemCollection {
 
     /**
      * 是否可以选中
+     *
      * @param item
      * @return
      */
@@ -194,18 +194,10 @@ public class SelectedItemCollection {
             int maxSelectable = SelectionSpec.getInstance().maxSelectable;
             String cause;
 
-            try {
-                cause = mContext.getResources().getQuantityString(
-                        R.plurals.error_over_count,
-                        maxSelectable,
-                        maxSelectable
-                );
-            } catch (Resources.NotFoundException e) {
-                cause = mContext.getString(
-                        R.string.error_over_count,
-                        maxSelectable
-                );
-            }
+            cause = mContext.getString(
+                    R.string.error_over_count,
+                    maxSelectable
+            );
 
             return new IncapableCause(cause);
         }
@@ -215,6 +207,7 @@ public class SelectedItemCollection {
 
     /**
      * 是否已经达到最大数量
+     *
      * @return
      */
     public boolean maxSelectableReached() {

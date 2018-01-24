@@ -24,7 +24,7 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 
-import com.miraclehen.monkey.MatisseActivity;
+import com.miraclehen.monkey.MonkeyActivity;
 import com.miraclehen.monkey.loader.AlbumLoader;
 import com.miraclehen.monkey.loader.CaptureLoader;
 
@@ -47,8 +47,8 @@ public class AlbumCollection implements LoaderManager.LoaderCallbacks<Cursor> {
         }
         if (id == LOADER_ID_FOR_CAPTURE) {
             //拍照回来
-            Uri uri = args.getParcelable(MatisseActivity.EXTRA_CONTENT_URI);
-            String path = args.getString(MatisseActivity.EXTRA_CONTENT_PATH);
+            Uri uri = args.getParcelable(MonkeyActivity.EXTRA_CONTENT_URI);
+            String path = args.getString(MonkeyActivity.EXTRA_CONTENT_PATH);
             return CaptureLoader.newInstance(context, uri, path);
         } else {
             return AlbumLoader.newInstance(context);

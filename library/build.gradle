@@ -8,18 +8,16 @@ android {
     defaultConfig {
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
-        versionCode 3
-        versionName "1.0.2"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+
+    lintOptions {
+        abortOnError false
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-
-        lintOptions {
-            abortOnError false
         }
     }
 }
@@ -30,7 +28,7 @@ publish {
     userOrg = 'miraclehen'
     groupId = 'com.miraclehen'
     artifactId = 'monkey'
-    publishVersion = '1.0.2'
+    publishVersion = '1.0.4'
     desc = 'A select media file library for android.'
     website = 'https://github.com/miraclehen/monkey'
 }
@@ -38,7 +36,7 @@ publish {
 
 dependencies {
     api fileTree(include: ['*.jar'], dir: 'libs')
-    testImplementation 'junit:junit:4.12'
+
     implementation "com.android.support:support-v4:$rootProject.supportLibraryVersion"
     implementation "com.android.support:appcompat-v7:$rootProject.supportLibraryVersion"
     implementation "com.android.support:support-annotations:$rootProject.supportLibraryVersion"
@@ -48,7 +46,7 @@ dependencies {
     compileOnly "com.github.bumptech.glide:glide:$rootProject.glideVersion"
     compileOnly "com.squareup.picasso:picasso:$rootProject.picassoVersion"
 
-    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5.4'
-    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.4'
+//    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5.4'
+//    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.4'
 
 }

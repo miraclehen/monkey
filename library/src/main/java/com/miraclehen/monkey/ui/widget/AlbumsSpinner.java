@@ -45,8 +45,8 @@ public class AlbumsSpinner {
         mListPopupWindow.setModal(true);
         float density = context.getResources().getDisplayMetrics().density;
         mListPopupWindow.setContentWidth((int) (216 * density));
-        mListPopupWindow.setHorizontalOffset((int) (16 * density));
-        mListPopupWindow.setVerticalOffset((int) (-48 * density));
+//        mListPopupWindow.setHorizontalOffset((int) (16 * density));
+//        mListPopupWindow.setVerticalOffset((int) (-48 * density));
 
         mListPopupWindow.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -108,7 +108,7 @@ public class AlbumsSpinner {
         ta.recycle();
         right.setColorFilter(color, PorterDuff.Mode.SRC_IN);
 
-//        mSelected.setVisibility(View.GONE);
+        mSelected.setVisibility(View.GONE);
         mSelected.setOnClickListener(new View.OnClickListener() {
 
             @Override

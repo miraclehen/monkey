@@ -35,7 +35,7 @@ public class MediaGrid extends SquareFrameLayout implements View.OnClickListener
     private ImageView mThumbnail;
     private CheckView mCheckView;
     private TextView mVideoDuration;
-    private ImageView mUploadedIv;
+//    private ImageView mUploadedIv;
 
     private MediaItem mMedia;
     private PreBindInfo mPreBindInfo;
@@ -57,7 +57,7 @@ public class MediaGrid extends SquareFrameLayout implements View.OnClickListener
         mThumbnail = findViewById(R.id.media_thumbnail);
         mCheckView = findViewById(R.id.check_view);
         mVideoDuration = findViewById(R.id.video_duration);
-        mUploadedIv = findViewById(R.id.uploaded_iv);
+//        mUploadedIv = findViewById(R.id.uploaded_iv);
 
         mThumbnail.setOnClickListener(this);
         mCheckView.setOnClickListener(this);

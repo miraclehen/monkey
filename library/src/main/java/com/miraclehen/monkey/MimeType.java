@@ -30,7 +30,7 @@ import java.util.Locale;
 import java.util.Set;
 
 /**
- * MIME Type enumeration to restrict selectable media on the selection activity. Matisse only supports images and
+ * MIME Type enumeration to restrict selectable media on the selection activity. Monkey only supports images and
  * videos.
  * <p>
  * Good example of mime types Android supports:
