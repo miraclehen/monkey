@@ -2,12 +2,12 @@ apply plugin: 'com.android.library'
 apply plugin: 'com.novoda.bintray-release'
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion "26.0.3"
+    compileSdkVersion rootProject.compileSdkVersion
+    buildToolsVersion rootProject.buildToolsVersion
 
     defaultConfig {
-        minSdkVersion 15
-        targetSdkVersion 26
+        minSdkVersion rootProject.minSdkVersion
+        targetSdkVersion rootProject.targetSdkVersion
     }
 
     lintOptions {
@@ -28,27 +28,25 @@ publish {
     userOrg = 'miraclehen'
     groupId = 'com.miraclehen'
     artifactId = 'monkey'
-    publishVersion = '1.0.4'
+    publishVersion = '1.0.8'
     desc = 'A select media file library for android.'
     website = 'https://github.com/miraclehen/monkey'
 }
 
-ext.supportLibVersion = '26.1.0'
 
 dependencies {
     api fileTree(include: ['*.jar'], dir: 'libs')
-    api "com.android.support:support-v4:${supportLibVersion}"
-    api "com.android.support:appcompat-v7:${supportLibVersion}"
 
-    api "com.android.support:support-annotations:${supportLibVersion}"
-    api "com.android.support:recyclerview-v7:${supportLibVersion}"
-    api 'com.github.chrisbanes:PhotoView:2.0.0'
-    compileOnly 'com.github.bumptech.glide:glide:4.3.0'
-    compileOnly 'com.squareup.picasso:picasso:2.5.0'
-    // Rx
-    api 'io.reactivex.rxjava2:rxandroid:2.0.1'
-    api 'io.reactivex.rxjava2:rxjava:2.1.0'
+    implementation "com.android.support:support-v4:$rootProject.supportLibraryVersion"
+    implementation "com.android.support:appcompat-v7:$rootProject.supportLibraryVersion"
+    implementation "com.android.support:support-annotations:$rootProject.supportLibraryVersion"
+    implementation "com.android.support:recyclerview-v7:$rootProject.supportLibraryVersion"
+
+    implementation 'com.github.chrisbanes:PhotoView:2.0.0'
+    compileOnly "com.github.bumptech.glide:glide:$rootProject.glideVersion"
+    compileOnly "com.squareup.picasso:picasso:$rootProject.picassoVersion"
+
+//    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5.4'
+//    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.4'
+
 }
-
-
-

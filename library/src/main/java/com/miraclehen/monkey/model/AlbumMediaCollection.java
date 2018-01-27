@@ -20,11 +20,11 @@ import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 
+import com.miraclehen.monkey.CaptureType;
 import com.miraclehen.monkey.entity.Album;
 import com.miraclehen.monkey.loader.AlbumMediaLoader;
 
@@ -32,9 +32,9 @@ import java.lang.ref.WeakReference;
 
 public class AlbumMediaCollection implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final int LOADER_ID = 2;
-    private static final String ARGS_ALBUM = "args_album";
-    private static final String ARGS_ENABLE_CAPTURE = "args_enable_capture";
-    private static final String ARGS_ENABLE_RECORD = "args_enable_record";
+    private static final String ARGS_ALBUM = "ARGS_ALBUM";
+    private static final String ARGS_CAPTURE_TYPE = "ARGS_CAPTURE_TYPE";
+    private static final String ARGS_CAPTURE_VALID = "ARGS_CAPTURE_VALID";
     private WeakReference<Context> mContext;
     private LoaderManager mLoaderManager;
     private AlbumMediaCallbacks mCallbacks;
@@ -51,19 +51,12 @@ public class AlbumMediaCollection implements LoaderManager.LoaderCallbacks<Curso
             return null;
         }
 
-        return AlbumMediaLoader.newInstance(context, album,
-                album.isAll() && args.getBoolean(ARGS_ENABLE_CAPTURE, false),
-                args.getBoolean(ARGS_ENABLE_RECORD, false));
+        CaptureType captureType = CaptureType.valueOf(args.getString(ARGS_CAPTURE_TYPE, CaptureType.None.name()));
+        return AlbumMediaLoader.newInstance(context, album, album.isAll() ? captureType : CaptureType.None);
     }
-
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        Context context = mContext.get();
-        if (context == null) {
-            return;
-        }
-
         mCallbacks.onAlbumMediaLoad(data);
     }
 
@@ -88,24 +81,36 @@ public class AlbumMediaCollection implements LoaderManager.LoaderCallbacks<Curso
         mCallbacks = null;
     }
 
-    public void load(@Nullable Album target) {
-        load(target, false, false);
+    //========================>>>>>加载部分==========
+
+    /**
+     * 加载一个Album的内容
+     *
+     * @param target
+     */
+    public void load(Album target) {
+        load(target, CaptureType.None);
     }
 
-    public void load(@Nullable Album target, boolean enableCapture, boolean enableRecord) {
-        mLoaderManager.initLoader(LOADER_ID, makeArgument(target, enableCapture, enableRecord), this);
+    /**
+     * 加载一个Album的内容
+     *
+     * @param target
+     * @param captureType
+     */
+    public void load( Album target, CaptureType captureType) {
+        mLoaderManager.initLoader(LOADER_ID, makeArgument(target, captureType), this);
     }
 
-    private Bundle makeArgument(Album target, boolean enableCapture, boolean enableRecord) {
+    public void restart( Album target, CaptureType captureType){
+        mLoaderManager.restartLoader(LOADER_ID, makeArgument(target, captureType), this);
+    }
+
+    private Bundle makeArgument(Album target, CaptureType captureType) {
         Bundle args = new Bundle();
         args.putParcelable(ARGS_ALBUM, target);
-        args.putBoolean(ARGS_ENABLE_RECORD, enableRecord);
-        args.putBoolean(ARGS_ENABLE_CAPTURE, enableCapture);
+        args.putString(ARGS_CAPTURE_TYPE, captureType.name());
         return args;
-    }
-
-    public void reloadForCapture(@Nullable Album target, boolean enableCapture, boolean enableRecord) {
-        mLoaderManager.restartLoader(LOADER_ID, makeArgument(target, enableCapture, enableRecord), this);
     }
 
 

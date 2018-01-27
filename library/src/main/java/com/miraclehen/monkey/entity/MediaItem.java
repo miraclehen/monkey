@@ -56,8 +56,6 @@ public class MediaItem implements Parcelable {
     private long modifiedDate;
     //文件夹相关
     private String bucketId;
-    //是否已经上传过.-1为还没确定。0为还没上传过，1为上传过
-    private int mUploaded = -1;
     //是否已被选中
     private boolean isChecked = true;
 
@@ -174,25 +172,7 @@ public class MediaItem implements Parcelable {
 
         MediaItem item = (MediaItem) o;
 
-//        if (id != item.id) return false;
-//        return id == item.id;
-//        if (length != item.length) return false;
-//        if (duration != item.duration) return false;
-//        if (Double.compare(item.latitude, latitude) != 0) return false;
-//        if (Double.compare(item.longitude, longitude) != 0) return false;
-//        if (createDate != item.createDate) return false;
-//        if (width != item.width) return false;
-//        if (height != item.height) return false;
-//        if (modifiedDate != item.modifiedDate) return false;
-//        if (mimeType != null ? !mimeType.equals(item.mimeType) : item.mimeType != null)
-//            return false;
-//        return originalPath != null ? originalPath.equals(item.originalPath) : item.originalPath == null;
         return originalPath != null ? originalPath.equals(item.originalPath) : item.originalPath == null;
-//        if (thumbnailBigPath != null ? !thumbnailBigPath.equals(item.thumbnailBigPath) : item.thumbnailBigPath != null)
-//            return false;
-//        if (thumbnailSmallPath != null ? !thumbnailSmallPath.equals(item.thumbnailSmallPath) : item.thumbnailSmallPath != null)
-//            return false;
-//        return bucketId != null ? bucketId.equals(item.bucketId) : item.bucketId == null;
     }
 
     @Override
@@ -347,14 +327,6 @@ public class MediaItem implements Parcelable {
         this.bucketId = bucketId;
     }
 
-    public int getUploaded() {
-        return mUploaded;
-    }
-
-    public void setUploaded(int uploaded) {
-        this.mUploaded = uploaded;
-    }
-
     public boolean isChecked() {
         return isChecked;
     }
@@ -386,7 +358,6 @@ public class MediaItem implements Parcelable {
         dest.writeString(this.thumbnailSmallPath);
         dest.writeLong(this.modifiedDate);
         dest.writeString(this.bucketId);
-        dest.writeInt(this.mUploaded);
         dest.writeByte(this.isChecked ? (byte) 1 : (byte) 0);
     }
 
@@ -407,7 +378,6 @@ public class MediaItem implements Parcelable {
         this.thumbnailSmallPath = in.readString();
         this.modifiedDate = in.readLong();
         this.bucketId = in.readString();
-        this.mUploaded = in.readInt();
         this.isChecked = in.readByte() != 0;
     }
 
@@ -422,4 +392,27 @@ public class MediaItem implements Parcelable {
             return new MediaItem[size];
         }
     };
+
+    @Override
+    public String toString() {
+        return "MediaItem{" +
+                "id=" + id +
+                ", mimeType='" + mimeType + '\'' +
+                ", uri=" + uri +
+                ", length=" + length +
+                ", duration=" + duration +
+                ", latitude=" + latitude +
+                ", longitude=" + longitude +
+                ", createDate=" + createDate +
+                ", addDate=" + addDate +
+                ", width=" + width +
+                ", height=" + height +
+                ", originalPath='" + originalPath + '\'' +
+                ", thumbnailBigPath='" + thumbnailBigPath + '\'' +
+                ", thumbnailSmallPath='" + thumbnailSmallPath + '\'' +
+                ", modifiedDate=" + modifiedDate +
+                ", bucketId='" + bucketId + '\'' +
+                ", isChecked=" + isChecked +
+                '}';
+    }
 }

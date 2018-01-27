@@ -6,7 +6,9 @@ package com.miraclehen.monkey;
  */
 public enum CaptureType {
 
+    None,
     Image,
-    Video,
+    Video,;
+
 
 }

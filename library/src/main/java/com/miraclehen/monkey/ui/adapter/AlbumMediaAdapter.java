@@ -29,12 +29,14 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.miraclehen.monkey.CaptureType;
 import com.miraclehen.monkey.R;
+import com.miraclehen.monkey.UICallback;
 import com.miraclehen.monkey.entity.Album;
 import com.miraclehen.monkey.entity.IncapableCause;
 import com.miraclehen.monkey.entity.MediaItem;
 import com.miraclehen.monkey.entity.SelectionSpec;
-import com.miraclehen.monkey.listener.CatchSpePositionCallback;
+import com.miraclehen.monkey.listener.CatchSpecCallbackInvoker;
 import com.miraclehen.monkey.model.SelectedItemCollection;
 import com.miraclehen.monkey.ui.widget.CheckView;
 import com.miraclehen.monkey.ui.widget.MediaGrid;
@@ -67,15 +69,20 @@ public class AlbumMediaAdapter extends
     private final Drawable mPlaceholder;
     //外部可选配置
     private SelectionSpec mSelectionSpec;
-    private CheckStateListener mCheckStateListener;
-    private OnMediaClickListener mOnMediaClickListener;
+
+
+    /**
+     * 点击监听器回调
+     */
+    private UICallback mUICallback;
+
     private RecyclerView mRecyclerView;
     private int mImageResize;
     private int mDateCount = 0;
     private Context mContext;
 
     private HashMap<Long, Integer> mDateWithPosMap = new HashMap<>();
-    private List<Long> mDateList = new ArrayList<>();
+    private ArrayList<Long> mDateList = new ArrayList<>();
 
     private List<CursorBean> mCursorBeanList = new ArrayList<>();
 
@@ -99,8 +106,8 @@ public class AlbumMediaAdapter extends
 
     @Override
     public void swapCursor(Cursor newCursor) {
-        super.swapCursor(newCursor);
         isProcessData = false;
+        super.swapCursor(newCursor);
     }
 
     private void processData(Cursor newCursor) {
@@ -134,7 +141,7 @@ public class AlbumMediaAdapter extends
         //排序
         Long[] dateArray = mDateWithPosMap.keySet().toArray(new Long[0]);
 
-        mDateList = Arrays.asList(dateArray);
+        mDateList.addAll(Arrays.asList(dateArray));
         Collections.sort(mDateList, new Comparator<Long>() {
             @Override
             public int compare(Long o1, Long o2) {
@@ -163,46 +170,10 @@ public class AlbumMediaAdapter extends
             addCursorView(i);
         }
 
-        invokeDataOrderedCallback(mCursorBeanList);
+        //回调 获取日期最新的一条数据
+        CatchSpecCallbackInvoker.invokeNewestCallback(mAlbum, mCursorBeanList, newCursor);
     }
 
-    private void invokeDataOrderedCallback(List<CursorBean> dataList) {
-        if (mAlbum.isAll()) {
-            //加载全部文件夹相册
-            if (mSelectionSpec.catchSpecPosition != -1 && mSelectionSpec.catchSpecPositionCallback != null) {
-                //获取指定位置的MediaItem数据的回调
-                invokeCatchSpecCallback(dataList, mSelectionSpec.catchSpecPosition, mSelectionSpec.catchSpecPositionCallback);
-                mSelectionSpec.catchSpecPosition = -1;
-                mSelectionSpec.catchSpecPositionCallback = null;
-            }
-        }
-    }
-
-    /**
-     * 获取指定位置的MediaItem数据
-     * <p>
-     * 注意：目前只实现取最新的数据
-     * 后期可以重写这个方法
-     */
-    private void invokeCatchSpecCallback(List<CursorBean> dataList, int position, CatchSpePositionCallback callback) {
-        if (mSelectionSpec.capture) {
-            //跳过的日期视图和拍摄视图
-            position = 2;
-            if (dataList.size() == 2) {
-                return;
-            }
-        }
-
-
-        int reachPos = dataList.get(position).getCursorPosition();
-        if (reachPos == -1) {
-            return;
-        }
-        boolean reachable = mCursor.moveToPosition(reachPos);
-        if (reachable) {
-            callback.catched(position, MediaItem.valueOf(mCursor));
-        }
-    }
 
     /**
      * 添加日期视图
@@ -256,8 +227,8 @@ public class AlbumMediaAdapter extends
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (v.getContext() instanceof OnPhotoCapture) {
-                        ((OnPhotoCapture) v.getContext()).capture();
+                    if (mUICallback != null) {
+                        mUICallback.startCapture(CaptureType.Image);
                     }
                 }
             });
@@ -269,8 +240,8 @@ public class AlbumMediaAdapter extends
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (v.getContext() instanceof OnPhotoCapture) {
-                        ((OnPhotoCapture) v.getContext()).record();
+                    if (mUICallback != null) {
+                        mUICallback.startCapture(CaptureType.Video);
                     }
                 }
             });
@@ -278,7 +249,7 @@ public class AlbumMediaAdapter extends
         } else {
             if (viewType == VIEW_TYPE_MEDIA) {
                 //正常的Media视图
-                View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.media_grid_item,
+                MediaGrid v = (MediaGrid) LayoutInflater.from(parent.getContext()).inflate(R.layout.media_grid_item,
                         parent, false);
                 return new MediaViewHolder(v);
             } else if (viewType == VIEW_TYPE_DATE) {
@@ -307,7 +278,6 @@ public class AlbumMediaAdapter extends
                 moveToPosition(position);
                 onBindViewHolder(holder, mCursor);
             }
-
         }
     }
 
@@ -331,9 +301,9 @@ public class AlbumMediaAdapter extends
             MediaViewHolder mediaViewHolder = (MediaViewHolder) holder;
 
             final MediaItem item = MediaItem.valueOf(cursor);
-            if (item.getUploaded() == -1) {
-                //如果还没确定这张是否上传过
-                item.setUploaded(mSelectionSpec.extraIdMap.containsKey(item.getId()) ? 1 : 0);
+
+            if (mSelectionSpec.inflateItemViewCallback != null) {
+                mSelectionSpec.inflateItemViewCallback.callback(item, (MediaGrid) holder.itemView);
             }
 
             mediaViewHolder.mMediaGrid.preBindMedia(new MediaGrid.PreBindInfo(
@@ -387,69 +357,69 @@ public class AlbumMediaAdapter extends
 
     /**
      * 当item小图被点击
+     *
      * @param thumbnail
      * @param item
      * @param holder
      */
     @Override
     public void onThumbnailClicked(ImageView thumbnail, MediaItem item, RecyclerView.ViewHolder holder) {
-        if (mOnMediaClickListener != null) {
-            mOnMediaClickListener.onMediaClick(null, item, holder.getAdapterPosition());
+        if (mUICallback != null) {
+            mUICallback.onMediaClick(mAlbum, item, holder.getAdapterPosition());
         }
     }
 
     /**
      * 当勾选checkView被点击
+     *
      * @param checkView
      * @param item
      * @param holder
      */
     @Override
     public void onCheckViewClicked(CheckView checkView, MediaItem item, RecyclerView.ViewHolder holder) {
-
         if (mSelectionSpec.countable) {
-            //可数的
+            //数字可选模式
             int checkedNum = mSelectedCollection.checkedNumOf(item);
             if (checkedNum == CheckView.UNCHECKED) {
                 if (assertAddSelection(holder.itemView.getContext(), item)) {
-                    if (mSelectionSpec.extraIdMap.containsKey(item.getId())) {
-                        notifyUploadedFileCheckedListener(item);
-                    }
                     mSelectedCollection.add(item);
-                    notifyCheckStateChanged(item);
+                    notifyListeners(item, true);
                 }
             } else {
                 mSelectedCollection.remove(item);
-                notifyCheckStateChanged(item);
+                notifyListeners(item, false);
             }
         } else {
-            //直接打钩
+            //勾选模式
             if (mSelectedCollection.isSelected(item)) {
                 mSelectedCollection.remove(item);
-                notifyCheckStateChanged(item);
+                notifyListeners(item, false);
             } else {
                 if (assertAddSelection(holder.itemView.getContext(), item)) {
-                    if (mSelectionSpec.extraIdMap.containsKey(item.getId())) {
-                        notifyUploadedFileCheckedListener(item);
-                    }
                     mSelectedCollection.add(item);
-                    notifyCheckStateChanged(item);
+                    notifyListeners(item, true);
                 }
             }
         }
+        notifyDataSetChanged();
     }
 
-    private void notifyCheckStateChanged(MediaItem mediaItem) {
-        notifyDataSetChanged();
-        if (mCheckStateListener != null) {
-            mCheckStateListener.onUpdate();
+    /**
+     * 通知各种监听器
+     *
+     * @param mediaItem
+     * @param check
+     */
+    private void notifyListeners(MediaItem mediaItem, boolean check) {
+        //更新底部工具条数字监听器
+        if (mUICallback != null) {
+            mUICallback.updateBottomBarCount();
         }
 
-    }
-
-    private void notifyUploadedFileCheckedListener(MediaItem mediaItem) {
+        //当某个Item被勾选或者取消勾选监听器
         if (mSelectionSpec.checkListener != null) {
-            mSelectionSpec.checkListener.onCheck(mediaItem);
+            mSelectionSpec.checkListener.onCheck(mediaItem, check);
         }
     }
 
@@ -540,18 +510,26 @@ public class AlbumMediaAdapter extends
         });
     }
 
+    /**
+     * 是否可以选中
+     *
+     * @param context
+     * @param item
+     * @return
+     */
     private boolean assertAddSelection(Context context, MediaItem item) {
         IncapableCause cause = mSelectedCollection.isAcceptable(item);
         IncapableCause.handleCause(context, cause);
         return cause == null;
     }
 
-    public void registerCheckStateListener(CheckStateListener listener) {
-        mCheckStateListener = listener;
-    }
-
-    public void registerOnMediaClickListener(OnMediaClickListener listener) {
-        mOnMediaClickListener = listener;
+    /**
+     * 设置监听器回调
+     *
+     * @param callback
+     */
+    public void setUICallback(UICallback callback) {
+        this.mUICallback = callback;
     }
 
     private int getImageResize(Context context) {
@@ -565,23 +543,6 @@ public class AlbumMediaAdapter extends
             mImageResize = (int) (mImageResize * mSelectionSpec.thumbnailScale);
         }
         return mImageResize;
-    }
-
-    public interface CheckStateListener {
-        void onUpdate();
-    }
-
-    /**
-     * 当小图被点击
-     */
-    public interface OnMediaClickListener {
-        void onMediaClick(Album album, MediaItem item, int adapterPosition);
-    }
-
-    public interface OnPhotoCapture {
-        void capture();
-
-        void record();
     }
 
     private String getFormatDate(Date date) {

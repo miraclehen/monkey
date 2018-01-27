@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   Copyright 2017 Zhihu Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,5 +35,7 @@
     <string name="error_no_video_activity">No App found supporting video preview</string>
 
     <string name="date_format">yyyy-MM-dd</string>
-        <string name="today">Today</string>
+    <string name="today">Today</string>
+
+    <string name="loading">loading</string>
 </resources>

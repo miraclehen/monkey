@@ -19,56 +19,130 @@ package com.miraclehen.monkey.entity;
 import android.content.pm.ActivityInfo;
 import android.support.annotation.StyleRes;
 
+import com.miraclehen.monkey.CaptureType;
 import com.miraclehen.monkey.MimeType;
 import com.miraclehen.monkey.R;
 import com.miraclehen.monkey.engine.ImageEngine;
 import com.miraclehen.monkey.engine.impl.GlideEngine;
 import com.miraclehen.monkey.filter.Filter;
-import com.miraclehen.monkey.listener.CatchSpePositionCallback;
-import com.miraclehen.monkey.listener.OnExtraFileCheckListener;
+import com.miraclehen.monkey.listener.CatchSpecMediaItemCallback;
+import com.miraclehen.monkey.listener.InflateItemViewCallback;
+import com.miraclehen.monkey.listener.OnItemCheckChangeListener;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
+/**
+ * 选择偏好
+ */
 public final class SelectionSpec {
 
+    /**
+     * 数据MimeType集合
+     */
     public Set<MimeType> mimeTypeSet;
-    public boolean mediaTypeExclusive;
-    public boolean showSingleMediaType;
+
+    /**
+     * 主题资源id
+     */
     @StyleRes
     public int themeId;
+
+    /**
+     * 显示数据屏幕方向
+     */
     public int orientation;
+
+    /**
+     * 是否可数
+     */
     public boolean countable;
+
+    /**
+     * 最大可选中数量
+     */
     public int maxSelectable;
+
+    /**
+     * 选中数据过滤器
+     */
     public List<Filter> filters;
-    public boolean capture;
-    //是否可以录制
-    public boolean record;
+
+    /**
+     * 拍摄类型，拍摄照片，录制视频，或者都不
+     */
+    public CaptureType captureType;
+
+    /**
+     * 拍摄策略
+     */
     public CaptureStrategy captureStrategy;
-    public int spanCount;
-    public int gridExpectedSize;
+
+    /**
+     * 拍摄后是否直接退出Monkey
+     */
+    public boolean captureFinishBack;
+
+    /**
+     * 缩略图缩放比例
+     * 最大值为1f
+     */
     public float thumbnailScale;
+
+    /**
+     * 图片加载引擎
+     */
     public ImageEngine imageEngine;
+
+    /**
+     * 是否支持日期分组
+     */
     public boolean groupByDate;
 
-    public boolean singleResultModel;
-    public int toolbarLayoutId;
-    public int backViewId;
-    public int anchorViewId;
+    /**
+     * 一行的item数量
+     */
+    public int spanCount;
 
-    //获取指定位置的MediaItem数据
-    public int catchSpecPosition = -1;
-    public CatchSpePositionCallback catchSpecPositionCallback;
-    //已选中的MediaItem
-//    public final List<String> selectedPathList = new ArrayList<>();
-//    public final Map<Integer, Boolean> selectedPathMap = new HashMap<>();
+    /**
+     * 是否启动单一结果模式。
+     * 如果为true，那么当选择其中一个item适合，直接结束选择。
+     * 当为true的时候，{@link #captureFinishBack}将为被设置为true，也就是拍照之后直接返回数据，不停留在MatisseActivity
+     */
+    public boolean singleResultModel;
+
+    /**
+     * 自定义toolbar的布局
+     */
+    public int toolbarLayoutId;
+
+    /**
+     * 已选中的MediaItem
+     */
     public final List<MediaItem> selectedDataList = new ArrayList<>();
-    //额额外的MediaItem数据。当点击这些Item时候。会触发checkListener
-    public OnExtraFileCheckListener checkListener;
-    public final Map<Long, Long> extraIdMap = new HashMap<>();
+
+    /**
+     * 当某个Item被勾选或者取消勾选
+     */
+    public OnItemCheckChangeListener checkListener;
+
+    /**
+     * 获取指定日期区间的数据MediaItem之后回调相应的方法
+     */
+    public CatchSpecMediaItemCallback.dateCallback catchDateSpecCallback;
+
+    /**
+     * 获取日期最新的一条数据MediaItem之后回调相应的方法
+     */
+    public CatchSpecMediaItemCallback.newestCallback catchNewestSpecCallback;
+
+    /**
+     * 生成item布局时候回调
+     * 可以对布局进行调整
+     */
+    public InflateItemViewCallback inflateItemViewCallback;
+
 
     private SelectionSpec() {
     }
@@ -85,30 +159,26 @@ public final class SelectionSpec {
 
     private void reset() {
         mimeTypeSet = null;
-        mediaTypeExclusive = true;
-        showSingleMediaType = false;
         themeId = R.style.Matisse_Zhihu;
         orientation = 0;
         countable = false;
         maxSelectable = 1;
         filters = null;
-        capture = false;
-        record = false;
+        captureType = CaptureType.None;
         captureStrategy = null;
-        spanCount = 3;
-        gridExpectedSize = 0;
-        thumbnailScale = 0.5f;
+        captureFinishBack = false;
+        spanCount = 4;
+        thumbnailScale = 0.85f;
         imageEngine = new GlideEngine();
-        groupByDate = false;
-//        selectedPathList.clear();
-        checkListener = null;
+        groupByDate = true;
         singleResultModel = false;
         toolbarLayoutId = -1;
-//        selectedPathMap.clear();
         selectedDataList.clear();
-        extraIdMap.clear();
-        catchSpecPosition = -1;
-        catchSpecPositionCallback = null;
+
+        checkListener = null;
+        catchDateSpecCallback = null;
+        catchNewestSpecCallback = null;
+        inflateItemViewCallback = null;
     }
 
     public boolean singleSelectionModeEnabled() {
@@ -119,12 +189,22 @@ public final class SelectionSpec {
         return orientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
     }
 
+    /**
+     * 仅仅显示图片
+     *
+     * @return
+     */
     public boolean onlyShowImages() {
-        return showSingleMediaType && MimeType.ofImage().containsAll(mimeTypeSet);
+        return MimeType.ofImage().containsAll(mimeTypeSet);
     }
 
+    /**
+     * 仅仅显示视频
+     *
+     * @return
+     */
     public boolean onlyShowVideos() {
-        return showSingleMediaType && MimeType.ofVideo().containsAll(mimeTypeSet);
+        return MimeType.ofVideo().containsAll(mimeTypeSet);
     }
 
     private static final class InstanceHolder {
@@ -137,6 +217,6 @@ public final class SelectionSpec {
      * @return
      */
     public boolean isCapture() {
-        return captureStrategy != null;
+        return captureType != CaptureType.None;
     }
 }

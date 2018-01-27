@@ -32,6 +32,9 @@ import com.miraclehen.monkey.entity.MediaItem;
 import com.miraclehen.monkey.entity.SelectionSpec;
 import com.miraclehen.monkey.utils.PhotoMetadataUtils;
 
+/**
+ * 图片预览页
+ */
 public class PreviewItemFragment extends Fragment {
 
     private static final String ARGS_ITEM = "args_item";

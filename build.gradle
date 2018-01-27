@@ -21,10 +21,29 @@ allprojects {
         google()
         jcenter()
         maven { url "https://jitpack.io" }
+        maven {
+            url 'https://oss.sonatype.org/content/repositories/snapshots/'
+        }
     }
 }
 
 task clean(type: Delete) {
     delete rootProject.buildDir
+}
+
+ext{
+    // sdk and tools
+    minSdkVersion = 15
+    targetSdkVersion = 26
+    compileSdkVersion = 26
+    buildToolsVersion = '26.0.3'
+
+    // dependencies versions
+    supportLibraryVersion = '26.1.0'
+
+    //common
+    glideVersion = '4.3.0'
+    picassoVersion = '2.5.2'
+
 }
 

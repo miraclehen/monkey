@@ -6,24 +6,33 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.miraclehen.monkey.Matisse;
-import com.miraclehen.monkey.MatisseActivity;
+import com.miraclehen.monkey.CaptureType;
 import com.miraclehen.monkey.MimeType;
+import com.miraclehen.monkey.Monkey;
+import com.miraclehen.monkey.MonkeyActivity;
 import com.miraclehen.monkey.engine.impl.GlideEngine;
 import com.miraclehen.monkey.engine.impl.PicassoEngine;
 import com.miraclehen.monkey.entity.CaptureStrategy;
 import com.miraclehen.monkey.entity.MediaItem;
+import com.miraclehen.monkey.listener.InflateItemViewCallback;
+import com.miraclehen.monkey.listener.OnItemCheckChangeListener;
+import com.miraclehen.monkey.ui.widget.MediaGrid;
+import com.miraclehen.monkey.utils.UIUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
-
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+    private static final String TAG = MainActivity.class.getSimpleName();
     private static final int REQUEST_CODE_CHOOSE = 23;
     private static final String BUNDLE_KEY_DATA_LIST = "bundle_key_data_list";
 
@@ -38,6 +47,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         findViewById(R.id.zhihu).setOnClickListener(this);
         findViewById(R.id.dracula).setOnClickListener(this);
+        findViewById(R.id.simple).setOnClickListener(this);
+        findViewById(R.id.simple_video).setOnClickListener(this);
 
         if (savedInstanceState != null && savedInstanceState.getParcelableArrayList(BUNDLE_KEY_DATA_LIST) != null) {
             dataList = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_DATA_LIST);
@@ -53,45 +64,75 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(final View v) {
         switch (v.getId()) {
+            case R.id.simple:
+                Monkey.from(MainActivity.this)
+                        .choose(MimeType.ofImageExcludeGif())
+                        .countable(true)
+                        .maxSelectable(20)
+                        .imageEngine(new GlideEngine())
+                        .forResult(REQUEST_CODE_CHOOSE);
+                break;
+            case R.id.simple_video:
+                Monkey.from(MainActivity.this)
+                        .choose(MimeType.ofVideo())
+                        .countable(true)
+                        .singleResultModel(true)
+                        .captureFinishBack(true)
+                        .captureType(CaptureType.Video)
+                        .captureStrategy(new CaptureStrategy(true, "com.miraclehen.sample.fileprovider"))
+                        .selectedMediaItem(dataList)
+                        .imageEngine(new GlideEngine())
+                        .forResult(REQUEST_CODE_CHOOSE);
+                break;
             case R.id.zhihu:
-//                Matisse.from(MainActivity.this)
-//                        .choose(MimeType.ofImage(), false)
-//                        .countable(true)
-//                        .spanCount(4)
-//                        .captureStrategy(new CaptureStrategy(true, "com.jackson.sample.fileprovider"))
-//                        .maxSelectable(9)
-//                        .groupByDate(true)
-//                        .capture(true)
-////                        .selectedUris(getUri())
-//                        .restrictOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
-//                        .thumbnailScale(0.85f)
-//                        .imageEngine(new GlideEngine())
-//                        .forResult(REQUEST_CODE_CHOOSE);
-
-                Matisse.from(MainActivity.this)
-                        .choose(MimeType.ofImageExcludeGif(), false)
+                Monkey.from(MainActivity.this)
+                        .choose(MimeType.ofImageExcludeGif())
                         .countable(false)
                         .spanCount(4)
-                        .capture(true)
+                        .selectedMediaItem(dataList)
+                        .captureFinishBack(false)
+                        .captureType(CaptureType.Image)
                         .captureStrategy(new CaptureStrategy(true, "com.miraclehen.sample.fileprovider"))
                         .maxSelectable(20)
+                        .toolbarLayoutId(R.layout.layout_custom_tool_bar)
+                        .theme(R.style.ZhihuTheme1)
                         .groupByDate(true)
-                        .showSingleMediaType(true)
+                        .inflateItemViewCallback(new InflateItemViewCallback() {
+                            @Override
+                            public void callback(MediaItem mediaItem, MediaGrid mediaGrid) {
+                                ImageView imageView = new ImageView(MainActivity.this);
+                                imageView.setImageResource(R.drawable.img_cloud);
+                                mediaGrid.addView(imageView, new FrameLayout.LayoutParams(UIUtils.convertDIPToPixels(MainActivity.this, 25),
+                                        UIUtils.convertDIPToPixels(MainActivity.this, 25), Gravity.START | Gravity.TOP));
+                            }
+                        })
+                        .checkListener(new OnItemCheckChangeListener() {
+                            @Override
+                            public void onCheck(MediaItem mediaItem, boolean check) {
+                                Log.i(TAG, mediaItem.toString() + "  \n" + check);
+                            }
+                        })
                         .thumbnailScale(0.85f)
                         .imageEngine(new GlideEngine())
                         .forResult(REQUEST_CODE_CHOOSE);
                 break;
             case R.id.dracula:
-                Matisse.from(MainActivity.this)
-                        .choose(MimeType.ofVideo())
-                        .showSingleMediaType(true)
-                        .theme(R.style.Matisse_Dracula)
-                        .captureStrategy(new CaptureStrategy(true, "com.miraclehen.sample.fileprovider"))
+                Monkey.from(MainActivity.this)
+                        .choose(MimeType.ofImageExcludeGif())
                         .countable(false)
                         .spanCount(4)
+                        .captureFinishBack(false)
+                        .captureType(CaptureType.Image)
+                        .captureStrategy(new CaptureStrategy(true, "com.miraclehen.sample.fileprovider"))
+                        .maxSelectable(20)
                         .groupByDate(true)
-                        .maxSelectable(9)
-                        .record(true)
+                        .checkListener(new OnItemCheckChangeListener() {
+                            @Override
+                            public void onCheck(MediaItem mediaItem, boolean check) {
+                                Log.i(TAG, mediaItem.toString() + "  \n" + check);
+                            }
+                        })
+                        .thumbnailScale(0.85f)
                         .imageEngine(new PicassoEngine())
                         .forResult(REQUEST_CODE_CHOOSE);
                 break;
@@ -103,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE_CHOOSE && resultCode == RESULT_OK) {
-            dataList = data.getParcelableArrayListExtra(MatisseActivity.EXTRA_RESULT_SELECTION_ITEM);
+            dataList = data.getParcelableArrayListExtra(MonkeyActivity.EXTRA_RESULT_SELECTION_ITEM);
             mAdapter.setData(dataList);
         }
     }
@@ -137,10 +178,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         public void onBindViewHolder(UriViewHolder holder, int position) {
             MediaItem item = mDataList.get(position);
             holder.mUri.setText("uri: " + item.getContentUri().toString());
-//            holder.mPath.setText("path: " + item.getPath().toString());
+            holder.mPath.setText("path: " + item.getOriginalPath().toString());
             holder.mLat.setText("纬度: " + String.valueOf(item.getLatitude()));
             holder.mLong.setText("经度:" + String.valueOf(item.getLongitude()));
-//            holder.mSize.setText("大小:" + String.valueOf(item.getSize()));
+            holder.mSize.setText("大小:" + String.valueOf(item.getLength()));
             holder.mDuration.setText("时长:" + String.valueOf(item.getDuration()));
             holder.mWidth.setText("宽度:" + String.valueOf(item.getWidth()));
             holder.mHeight.setText("高度:" + String.valueOf(item.getHeight()));
@@ -181,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private List<Uri> getUri(){
+    private List<Uri> getUri() {
         List<Uri> result = new ArrayList<>();
         if (dataList == null) {
             return result;

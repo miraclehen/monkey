@@ -16,4 +16,7 @@
   -->
 <resources>
     <color name="list_bg">#3B3B3B</color>
+    
+    <color name="material_orange">#FF9800</color>
+    <color name="material_orange2">#FFB74D</color>
 </resources>

@@ -5,12 +5,11 @@
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-
     <uses-permission android:name="android.permission.CAMERA" />
 
-    <application>
-        <activity android:name=".MatisseActivity"
-            android:theme="@style/Matisse.Transparent">
+    <application >
+        <activity android:name=".MonkeyActivity"
+            android:theme="@android:style/Theme.Translucent">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_MOUNTED" />
                 <data android:scheme="file" />

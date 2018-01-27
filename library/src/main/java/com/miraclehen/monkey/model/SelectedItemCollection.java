@@ -16,7 +16,6 @@
 package com.miraclehen.monkey.model;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -89,9 +88,6 @@ public class SelectedItemCollection {
     }
 
     public boolean add(MediaItem item) {
-        if (typeConflict(item)) {
-            throw new IllegalArgumentException("Can't select images and videos at the same time.");
-        }
         boolean added = mItems.add(item);
         if (added) {
             if (mCollectionType == COLLECTION_UNDEFINED) {
@@ -186,32 +182,34 @@ public class SelectedItemCollection {
         return mItems.contains(item);
     }
 
+    /**
+     * 是否可以选中
+     *
+     * @param item
+     * @return
+     */
     public IncapableCause isAcceptable(MediaItem item) {
         if (maxSelectableReached()) {
+            //选中数量超过最大值
             int maxSelectable = SelectionSpec.getInstance().maxSelectable;
             String cause;
 
-            try {
-                cause = mContext.getResources().getQuantityString(
-                        R.plurals.error_over_count,
-                        maxSelectable,
-                        maxSelectable
-                );
-            } catch (Resources.NotFoundException e) {
-                cause = mContext.getString(
-                        R.string.error_over_count,
-                        maxSelectable
-                );
-            }
+            cause = mContext.getString(
+                    R.string.error_over_count,
+                    maxSelectable
+            );
 
             return new IncapableCause(cause);
-        } else if (typeConflict(item)) {
-            return new IncapableCause(mContext.getString(R.string.error_type_conflict));
         }
 
         return PhotoMetadataUtils.isAcceptable(mContext, item);
     }
 
+    /**
+     * 是否已经达到最大数量
+     *
+     * @return
+     */
     public boolean maxSelectableReached() {
         return mItems.size() == SelectionSpec.getInstance().maxSelectable;
     }
@@ -234,16 +232,6 @@ public class SelectedItemCollection {
         } else if (hasVideo) {
             mCollectionType = COLLECTION_VIDEO;
         }
-    }
-
-    /**
-     * Determine whether there will be conflict media types. A user can only select images and videos at the same time
-     * while {@link SelectionSpec#mediaTypeExclusive} is set to false.
-     */
-    public boolean typeConflict(MediaItem item) {
-        return SelectionSpec.getInstance().mediaTypeExclusive
-                && ((item.isImage() && (mCollectionType == COLLECTION_VIDEO || mCollectionType == COLLECTION_MIXED))
-                || (item.isVideo() && (mCollectionType == COLLECTION_IMAGE || mCollectionType == COLLECTION_MIXED)));
     }
 
     public int count() {

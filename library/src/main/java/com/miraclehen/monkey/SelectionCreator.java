@@ -31,14 +31,14 @@ import com.miraclehen.monkey.entity.CaptureStrategy;
 import com.miraclehen.monkey.entity.MediaItem;
 import com.miraclehen.monkey.entity.SelectionSpec;
 import com.miraclehen.monkey.filter.Filter;
-import com.miraclehen.monkey.listener.CatchSpePositionCallback;
-import com.miraclehen.monkey.listener.OnExtraFileCheckListener;
+import com.miraclehen.monkey.listener.CatchSpecMediaItemCallback;
+import com.miraclehen.monkey.listener.InflateItemViewCallback;
+import com.miraclehen.monkey.listener.OnItemCheckChangeListener;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_BEHIND;
@@ -59,11 +59,12 @@ import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT;
 
 /**
+ * 选择偏好创建器
  * Fluent API for building media select specification.
  */
 @SuppressWarnings("unused")
 public final class SelectionCreator {
-    private final Matisse mMatisse;
+    private final Monkey mMatisse;
     private final SelectionSpec mSelectionSpec;
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -93,27 +94,14 @@ public final class SelectionCreator {
      * Constructs a new specification builder on the context.
      *
      * @param matisse   a requester context wrapper.
-     * @param mimeTypes MIME type set to select.
+     * @param mimeTypes MIME type set to select. 如果为true，那么在mineType显示图片和视频的情况下，用户可以同时选择图片或者视频。
+     *                  false则只能选择图片或者视频其中之一
      */
-    SelectionCreator(Matisse matisse, @NonNull Set<MimeType> mimeTypes, boolean mediaTypeExclusive) {
+    SelectionCreator(Monkey matisse, @NonNull Set<MimeType> mimeTypes) {
         mMatisse = matisse;
         mSelectionSpec = SelectionSpec.getCleanInstance();
         mSelectionSpec.mimeTypeSet = mimeTypes;
-        mSelectionSpec.mediaTypeExclusive = mediaTypeExclusive;
         mSelectionSpec.orientation = SCREEN_ORIENTATION_UNSPECIFIED;
-    }
-
-    /**
-     * Whether to show only one media type if choosing medias are only images or videos.
-     *
-     * @param showSingleMediaType whether to show only one media type, either images or videos.
-     * @return {@link SelectionCreator} for fluent API.
-     * @see SelectionSpec#onlyShowImages()
-     * @see SelectionSpec#onlyShowVideos()
-     */
-    public SelectionCreator showSingleMediaType(boolean showSingleMediaType) {
-        mSelectionSpec.showSingleMediaType = showSingleMediaType;
-        return this;
     }
 
     /**
@@ -167,28 +155,10 @@ public final class SelectionCreator {
         if (mSelectionSpec.filters == null) {
             mSelectionSpec.filters = new ArrayList<>();
         }
-        if (filter == null) throw new IllegalArgumentException("filter cannot be null");
         mSelectionSpec.filters.add(filter);
         return this;
     }
 
-    /**
-     * Determines whether the photo capturing is enabled or not on the media grid view.
-     * <p>
-     * If this value is set true, photo capturing entry will appear only on All Media's page.
-     *
-     * @param enable Whether to enable capturing or not. Default value is false;
-     * @return {@link SelectionCreator} for fluent API.
-     */
-    public SelectionCreator capture(boolean enable) {
-        mSelectionSpec.capture = enable;
-        return this;
-    }
-
-    public SelectionCreator record(boolean enable) {
-        mSelectionSpec.record = enable;
-        return this;
-    }
 
     /**
      * Capture strategy provided for the location to save photos including internal and external
@@ -199,6 +169,30 @@ public final class SelectionCreator {
      */
     public SelectionCreator captureStrategy(CaptureStrategy captureStrategy) {
         mSelectionSpec.captureStrategy = captureStrategy;
+        return this;
+    }
+
+    /**
+     * 拍摄类型
+     * 默认值为{#link CaptureType.None}
+     *
+     * @param captureType
+     * @return
+     */
+    public SelectionCreator captureType(CaptureType captureType) {
+        mSelectionSpec.captureType = captureType;
+        return this;
+    }
+
+    /**
+     * 拍摄后是否直接结束返回
+     * 默认值为true
+     *
+     * @param finishBack
+     * @return
+     */
+    public SelectionCreator captureFinishBack(boolean finishBack) {
+        mSelectionSpec.captureFinishBack = finishBack;
         return this;
     }
 
@@ -218,7 +212,6 @@ public final class SelectionCreator {
     /**
      * Set a fixed span count for the media grid. Same for different screen orientations.
      * <p>
-     * This will be ignored when {@link #gridExpectedSize(int)} is set.
      *
      * @param spanCount Requested span count.
      * @return {@link SelectionCreator} for fluent API.
@@ -226,19 +219,6 @@ public final class SelectionCreator {
     public SelectionCreator spanCount(int spanCount) {
         if (spanCount < 1) throw new IllegalArgumentException("spanCount cannot be less than 1");
         mSelectionSpec.spanCount = spanCount;
-        return this;
-    }
-
-    /**
-     * Set expected length for media grid to adapt to different screen sizes. This won't necessarily
-     * be applied cause the media grid should fill the view container. The measured media grid's
-     * length will be as close to this value as possible.
-     *
-     * @param size Expected media grid length in pixel.
-     * @return {@link SelectionCreator} for fluent API.
-     */
-    public SelectionCreator gridExpectedSize(int size) {
-        mSelectionSpec.gridExpectedSize = size;
         return this;
     }
 
@@ -283,7 +263,7 @@ public final class SelectionCreator {
             return;
         }
 
-        Intent intent = new Intent(activity, MatisseActivity.class);
+        Intent intent = new Intent(activity, MonkeyActivity.class);
 
         Fragment fragment = mMatisse.getFragment();
         if (fragment != null) {
@@ -295,21 +275,23 @@ public final class SelectionCreator {
     }
 
     /**
-     * Determines whether the photo list is group by date.
+     * 根据日期分组
+     * 默认为true
      *
      * @param groupByDate true for group by date list and false for nothing
      * @return {@link SelectionCreator} for fluent API.
      */
     public SelectionCreator groupByDate(boolean groupByDate) {
         mSelectionSpec.groupByDate = groupByDate;
-        //it should not enable groupBy and capture as same time
-//        mSelectionSpec.capture = false;
-//        if (groupByDate) {
-//            mSelectionSpec.capture = false;
-//        }
         return this;
     }
 
+    /**
+     * 初始化已选中的MediaItem列表
+     *
+     * @param list
+     * @return
+     */
     public SelectionCreator selectedMediaItem(List<MediaItem> list) {
         if (list == null) {
             return this;
@@ -318,7 +300,13 @@ public final class SelectionCreator {
         return this;
     }
 
-    public SelectionCreator checkListener(OnExtraFileCheckListener listener) {
+    /**
+     * Item被勾选或者反勾选监听器
+     *
+     * @param listener 监听器
+     * @return SelectionCreator
+     */
+    public SelectionCreator checkListener(OnItemCheckChangeListener listener) {
         mSelectionSpec.checkListener = listener;
         return this;
     }
@@ -326,6 +314,7 @@ public final class SelectionCreator {
     /**
      * 是否启动单一结果模式。
      * 如果为true，那么当选择其中一个item适合，直接结束选择。
+     * 当为true的时候，{@link #captureFinishBack(boolean)}将为被设置为true，也就是拍照之后直接返回数据，不停留在MatisseActivity
      *
      * @param b
      * @return
@@ -338,45 +327,54 @@ public final class SelectionCreator {
     /**
      * 顶部头部布局Id
      *
-     * @param layout
+     * @param toolbarLayout
      * @return
      */
-    public SelectionCreator toolbarLayoutId(@LayoutRes int layout, int backViewId, int anchorViewId) {
-        mSelectionSpec.toolbarLayoutId = layout;
-        mSelectionSpec.backViewId = backViewId;
-        mSelectionSpec.anchorViewId = anchorViewId;
+    public SelectionCreator toolbarLayoutId(@LayoutRes int toolbarLayout) {
+        mSelectionSpec.toolbarLayoutId = toolbarLayout;
         return this;
     }
 
     /**
-     * 外部传入点击出现Toast的Uri
+     * 获取日期最新的一条数据MediaItem之后回调相应的方法
      *
-     * @return
+     * @param callback CatchSpecMediaItemCallback.newestCallback
+     * @return SelectionCreator
      */
-    public SelectionCreator extraIdMap(final Map<Long, Long> map) {
-        if (map == null) {
-            return this;
+    public SelectionCreator catchNewestCallback(CatchSpecMediaItemCallback.newestCallback callback) {
+        if (callback == null) {
+            throw new IllegalArgumentException("CatchSpecMediaItemCallback.newestCallback not be null ");
         }
-        mSelectionSpec.extraIdMap.putAll(map);
+        mSelectionSpec.catchNewestSpecCallback = callback;
         return this;
     }
 
     /**
-     * 获取指定的位置MediaItem数据
-     * 数据为倒序。为0时候为最新一条数据。
+     * 获取指定日期区间的数据MediaItem之后回调相应的方法
      *
-     * @param position
+     * @param callback CatchSpecMediaItemCallback.dateCallback
+     * @return SelectionCreator
+     */
+    public SelectionCreator catchSpecDateCallback(CatchSpecMediaItemCallback.dateCallback callback) {
+        if (callback == null) {
+            throw new IllegalArgumentException("CatchSpecMediaItemCallback.dateCallback not be null ");
+        }
+        mSelectionSpec.catchDateSpecCallback = callback;
+        return this;
+    }
+
+    /**
+     * 生成item布局时候回调
+     * 可以对布局进行调整
+     *
      * @param callback
      * @return
      */
-    public SelectionCreator catchSpecPosition(int position, CatchSpePositionCallback callback) {
-        if (position < 0 || callback == null) {
-            return this;
+    public SelectionCreator inflateItemViewCallback(InflateItemViewCallback callback) {
+        if (callback == null) {
+            throw new IllegalArgumentException("InflateItemViewCallback not be null ");
         }
-        mSelectionSpec.catchSpecPosition = position;
-        mSelectionSpec.catchSpecPositionCallback = callback;
+        mSelectionSpec.inflateItemViewCallback = callback;
         return this;
     }
-
-
 }

@@ -27,13 +27,13 @@
         android:layout_gravity="top|right" />
 
 
-    <ImageView
-        android:id="@+id/uploaded_iv"
-        android:layout_width="25dp"
-        android:layout_height="25dp"
-        android:layout_gravity="top|left"
-        android:src="@drawable/img_cloud"
-        android:visibility="gone" />
+    <!--<ImageView-->
+        <!--android:id="@+id/uploaded_iv"-->
+        <!--android:layout_width="25dp"-->
+        <!--android:layout_height="25dp"-->
+        <!--android:layout_gravity="top|left"-->
+        <!--android:src="@drawable/img_cloud"-->
+        <!--android:visibility="gone" />-->
 
     <TextView
         android:id="@+id/video_duration"

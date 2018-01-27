@@ -21,6 +21,7 @@ import android.net.Uri;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestOptions;
 import com.miraclehen.monkey.engine.ImageEngine;
@@ -33,13 +34,14 @@ public class GlideEngine implements ImageEngine {
 
     @Override
     public void loadThumbnail(Context context, int resize, Drawable placeholder, ImageView imageView, Uri uri) {
-        RequestOptions options = new RequestOptions()
+        RequestOptions thumbnailOptions = new RequestOptions()
                 .placeholder(placeholder)
-                .override(resize,resize)
+                .override(resize, resize)
+                .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
                 .centerCrop();
         Glide.with(context)
                 .load(uri)
-                .apply(options)
+                .apply(thumbnailOptions)
                 .transition(new DrawableTransitionOptions().crossFade())
                 .into(imageView);
     }
@@ -47,28 +49,37 @@ public class GlideEngine implements ImageEngine {
     @Override
     public void loadGifThumbnail(Context context, int resize, Drawable placeholder, ImageView imageView,
                                  Uri uri) {
-        RequestOptions options = new RequestOptions()
+        RequestOptions gifThumbnailOptions = new RequestOptions()
                 .placeholder(placeholder)
-                .override(resize,resize)
+                .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
+                .override(resize, resize)
                 .centerCrop();
         Glide.with(context)
                 .load(uri)
-                .apply(options)
+                .apply(gifThumbnailOptions)
                 .transition(new DrawableTransitionOptions().crossFade())
                 .into(imageView);
     }
 
     @Override
     public void loadImage(Context context, int resizeX, int resizeY, ImageView imageView, Uri uri) {
+        RequestOptions imageOptions = new RequestOptions()
+                .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
+                .override(resizeX,resizeY);
         Glide.with(context)
                 .load(uri)
+                .apply(imageOptions)
                 .into(imageView);
     }
 
     @Override
     public void loadGifImage(Context context, int resizeX, int resizeY, ImageView imageView, Uri uri) {
+        RequestOptions gifImageOptions = new RequestOptions()
+                .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
+                .override(resizeX,resizeY);
         Glide.with(context)
                 .load(uri)
+                .apply(gifImageOptions)
                 .into(imageView);
     }
 
