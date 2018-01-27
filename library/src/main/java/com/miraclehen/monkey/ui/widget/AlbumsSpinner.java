@@ -102,11 +102,13 @@ public class AlbumsSpinner {
         // tint dropdown arrow icon
         Drawable[] drawables = mSelected.getCompoundDrawables();
         Drawable right = drawables[2];
-        TypedArray ta = mSelected.getContext().getTheme().obtainStyledAttributes(
-                new int[]{R.attr.album_element_color});
-        int color = ta.getColor(0, 0);
-        ta.recycle();
-        right.setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        if (right != null) {
+            TypedArray ta = mSelected.getContext().getTheme().obtainStyledAttributes(
+                    new int[]{R.attr.album_element_color});
+            int color = ta.getColor(0, 0);
+            ta.recycle();
+            right.setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        }
 
         mSelected.setVisibility(View.GONE);
         mSelected.setOnClickListener(new View.OnClickListener() {

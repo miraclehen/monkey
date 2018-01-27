@@ -11,14 +11,14 @@
     <ImageButton
         android:layout_width="30dp"
         android:id="@+id/finish_action"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_gravity="start|center_vertical"
         android:background="@android:color/transparent"
         android:src="@drawable/back" />
 
     <TextView
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_gravity="center"
         android:textColor="@android:color/white"
         android:textSize="16sp"

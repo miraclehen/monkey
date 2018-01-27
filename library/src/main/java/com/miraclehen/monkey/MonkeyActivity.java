@@ -45,7 +45,6 @@ import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.widget.AdapterView;
 import android.widget.FrameLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -137,10 +136,8 @@ public class MonkeyActivity extends AppCompatActivity implements
 
         if (mSpec.toolbarLayoutId == -1) {
             //使用默认的toolbar布局
-            mDefaultToolbar = (Toolbar) ((ViewStub) findViewById(R.id.toolbar_vs)).inflate();
             initDefaultToolbar();
         } else {
-            mCustomToolbar = (ViewGroup) LayoutInflater.from(MonkeyActivity.this).inflate(mSpec.toolbarLayoutId, null);
             initCustomToolbar();
         }
 
@@ -199,6 +196,7 @@ public class MonkeyActivity extends AppCompatActivity implements
      * 初始化默认的toolbar
      */
     private void initDefaultToolbar() {
+        mDefaultToolbar = (Toolbar) ((ViewStub) findViewById(R.id.toolbar_vs)).inflate();
         mToolbarWrapperLayout = findViewById(R.id.wrap_toolbar_layout);
         mAnchorView = findViewById(R.id.anchor_action);
 
@@ -217,8 +215,9 @@ public class MonkeyActivity extends AppCompatActivity implements
      * 初始化自定义的toolbar
      */
     private void initCustomToolbar() {
+        mCustomToolbar = (ViewGroup) LayoutInflater.from(MonkeyActivity.this).inflate(mSpec.toolbarLayoutId, null);
         mToolbarWrapperLayout = findViewById(R.id.wrap_toolbar_layout);
-        mToolbarWrapperLayout.addView(mCustomToolbar, new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+        mToolbarWrapperLayout.addView(mCustomToolbar, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
 
         View finishView = mCustomToolbar.findViewById(R.id.finish_action);

@@ -48,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.zhihu).setOnClickListener(this);
         findViewById(R.id.dracula).setOnClickListener(this);
         findViewById(R.id.simple).setOnClickListener(this);
+        findViewById(R.id.simple_video).setOnClickListener(this);
 
         if (savedInstanceState != null && savedInstanceState.getParcelableArrayList(BUNDLE_KEY_DATA_LIST) != null) {
             dataList = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_DATA_LIST);
@@ -71,11 +72,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         .imageEngine(new GlideEngine())
                         .forResult(REQUEST_CODE_CHOOSE);
                 break;
+            case R.id.simple_video:
+                Monkey.from(MainActivity.this)
+                        .choose(MimeType.ofVideo())
+                        .countable(true)
+                        .singleResultModel(true)
+                        .captureFinishBack(true)
+                        .captureType(CaptureType.Video)
+                        .captureStrategy(new CaptureStrategy(true, "com.miraclehen.sample.fileprovider"))
+                        .selectedMediaItem(dataList)
+                        .imageEngine(new GlideEngine())
+                        .forResult(REQUEST_CODE_CHOOSE);
+                break;
             case R.id.zhihu:
                 Monkey.from(MainActivity.this)
                         .choose(MimeType.ofImageExcludeGif())
                         .countable(false)
                         .spanCount(4)
+                        .selectedMediaItem(dataList)
                         .captureFinishBack(false)
                         .captureType(CaptureType.Image)
                         .captureStrategy(new CaptureStrategy(true, "com.miraclehen.sample.fileprovider"))
