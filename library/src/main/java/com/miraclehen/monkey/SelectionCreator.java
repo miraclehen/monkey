@@ -377,4 +377,19 @@ public final class SelectionCreator {
         mSelectionSpec.inflateItemViewCallback = callback;
         return this;
     }
+
+    /**
+     * 第一次显示数据的时候，自动滚动到相应日期
+     * 如果没有匹配对应的值，那么会滚动到最近的日期值
+     *
+     * @param millisecond
+     * @return
+     */
+    public SelectionCreator autoScrollToDate(long millisecond) {
+        if (millisecond < 0) {
+            throw new IllegalArgumentException("scrollToDate < 0");
+        }
+        mSelectionSpec.autoScrollDate = millisecond;
+        return this;
+    }
 }

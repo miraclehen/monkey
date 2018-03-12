@@ -36,7 +36,6 @@ import com.miraclehen.monkey.entity.Album;
 import com.miraclehen.monkey.entity.IncapableCause;
 import com.miraclehen.monkey.entity.MediaItem;
 import com.miraclehen.monkey.entity.SelectionSpec;
-import com.miraclehen.monkey.listener.CatchSpecCallbackInvoker;
 import com.miraclehen.monkey.model.SelectedItemCollection;
 import com.miraclehen.monkey.ui.widget.CheckView;
 import com.miraclehen.monkey.ui.widget.MediaGrid;
@@ -83,10 +82,24 @@ public class AlbumMediaAdapter extends
 
     private HashMap<Long, Integer> mDateWithPosMap = new HashMap<>();
     private ArrayList<Long> mDateList = new ArrayList<>();
-
     private List<CursorBean> mCursorBeanList = new ArrayList<>();
 
+    private OnDataChangeListener mOnDataChangeListener;
+
     private boolean isProcessData = false;
+
+
+
+
+    /**
+     * 适配器数据监听
+     */
+    public interface OnDataChangeListener{
+        /**
+         * 当处理数据完毕回调
+         */
+        void processFinished(Album album, List<CursorBean> dataList, Cursor cursor);
+    }
 
     public AlbumMediaAdapter(Context context, Album album, SelectedItemCollection selectedCollection,
                              RecyclerView recyclerView, List<MediaItem> selectedData) {
@@ -170,9 +183,13 @@ public class AlbumMediaAdapter extends
             addCursorView(i);
         }
 
-        //回调 获取日期最新的一条数据
-        CatchSpecCallbackInvoker.invokeNewestCallback(mAlbum, mCursorBeanList, newCursor);
+        if (mOnDataChangeListener != null) {
+            mOnDataChangeListener.processFinished(mAlbum, mCursorBeanList, newCursor);
+        }
+
+
     }
+
 
 
     /**
@@ -183,6 +200,7 @@ public class AlbumMediaAdapter extends
     private void addDateView(int position) {
         CursorBean cursorBean = new CursorBean();
         cursorBean.setDateView(true);
+        cursorBean.setDateValue(mDateList.get(position));
         cursorBean.setDateText(getFormatDate(new Date(mDateList.get(position))));
         cursorBean.setAdapterPosition(mCursorBeanList.size());
 
@@ -530,6 +548,14 @@ public class AlbumMediaAdapter extends
      */
     public void setUICallback(UICallback callback) {
         this.mUICallback = callback;
+    }
+
+    /**
+     * 设置数据变化监听器
+     * @param onDataChangeListener
+     */
+    public void setOnDataChangeListener(OnDataChangeListener onDataChangeListener) {
+        mOnDataChangeListener = onDataChangeListener;
     }
 
     private int getImageResize(Context context) {

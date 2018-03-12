@@ -28,7 +28,7 @@ publish {
     userOrg = 'miraclehen'
     groupId = 'com.miraclehen'
     artifactId = 'monkey'
-    publishVersion = '1.0.8'
+    publishVersion = '1.1.1'
     desc = 'A select media file library for android.'
     website = 'https://github.com/miraclehen/monkey'
 }

@@ -35,27 +35,53 @@
             android:textSize="22sp" />
 
         <Button
-            android:id="@+id/simple"
+            android:id="@+id/simple_multi_image"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/item_margin_horizontal"
             android:layout_marginRight="@dimen/item_margin_horizontal"
             android:layout_marginTop="8dp"
             android:minHeight="56dp"
-            android:text="Simple_Image"
+            android:text="Simple_Multi_Image"
             android:textAllCaps="false"
             android:textColor="@android:color/white"
             android:theme="@style/ZhihuOverlay" />
 
         <Button
-            android:id="@+id/simple_video"
+            android:id="@+id/simple_single_image"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/item_margin_horizontal"
             android:layout_marginRight="@dimen/item_margin_horizontal"
             android:layout_marginTop="8dp"
             android:minHeight="56dp"
-            android:text="Simple_Video"
+            android:text="Simple_Single_Image"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:theme="@style/ZhihuOverlay" />
+
+        <Button
+            android:id="@+id/simple_multi_video"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/item_margin_horizontal"
+            android:layout_marginRight="@dimen/item_margin_horizontal"
+            android:layout_marginTop="8dp"
+            android:minHeight="56dp"
+            android:text="Simple_Multi_Video"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:theme="@style/ZhihuOverlay" />
+
+        <Button
+            android:id="@+id/simple_single_video"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/item_margin_horizontal"
+            android:layout_marginRight="@dimen/item_margin_horizontal"
+            android:layout_marginTop="8dp"
+            android:minHeight="56dp"
+            android:text="Simple_Single_Video"
             android:textAllCaps="false"
             android:textColor="@android:color/white"
             android:theme="@style/ZhihuOverlay" />
@@ -68,7 +94,7 @@
             android:layout_marginRight="@dimen/item_margin_horizontal"
             android:layout_marginTop="8dp"
             android:minHeight="56dp"
-            android:text="Zhihu"
+            android:text="Advanced_Zhihu"
             android:textAllCaps="false"
             android:textColor="@android:color/white"
             android:theme="@style/ZhihuOverlay" />
@@ -82,23 +108,11 @@
             android:layout_marginRight="@dimen/item_margin_horizontal"
             android:layout_marginTop="8dp"
             android:minHeight="56dp"
-            android:text="Dracula"
+            android:text="Advanced_Dracula"
             android:textAllCaps="false"
             android:textColor="@android:color/white"
             android:theme="@style/DraculaOverlay" />
 
     </LinearLayout>
-
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/recyclerview"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/list_bg"
-        android:clipChildren="false"
-        android:clipToPadding="false"
-        android:paddingBottom="16dp"
-        android:paddingTop="16dp">
-
-    </android.support.v7.widget.RecyclerView>
 
 </LinearLayout>

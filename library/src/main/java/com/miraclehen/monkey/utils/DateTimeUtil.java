@@ -1,5 +1,13 @@
 package com.miraclehen.monkey.utils;
 
+import android.database.Cursor;
+
+import com.miraclehen.monkey.entity.Album;
+import com.miraclehen.monkey.entity.SelectionSpec;
+import com.miraclehen.monkey.ui.adapter.CursorBean;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TimeZone;
 
 /**
@@ -24,16 +32,78 @@ public class DateTimeUtil {
 
     /**
      * 将传入的时间，转换为毫秒。
-     * 根据时间位数做判断
      * <p>
-     * 最大秒数 用作毫秒时 ：9999999999 = 1970/4/27 1:46:39
-     * 最小毫秒数 当做秒来处理 10000000000 = 2286/11/21 1:46:40
+     * 1514736000000 为2018年一月一号0点0分0秒
      *
      * @param time
      * @return
      */
     public static long timeToMs(long time) {
-        //位数小于等于10位数，当做秒来处理，否则当初毫秒来处理
-        return String.valueOf(time).length() <= 10 ? time * 1000 : time;
+        long cTimeMis = System.currentTimeMillis() > 1514736000000L ? System.currentTimeMillis() : 1514736000000L;
+        return time * 1000 > cTimeMis ? time : time * 1000;
     }
+
+    /**
+     * 计算自动滚动到相应日期位置
+     *
+     * @param album
+     * @param dataList
+     * @param cursor
+     */
+    public static int calAutoScrollDatePosition(Album album, List<CursorBean> dataList, Cursor cursor) {
+        if (dataList.isEmpty()) {
+            return -1;
+        }
+        ArrayList<CursorBean> data = new ArrayList<>();
+        data.addAll(dataList);
+
+        long targetDate = SelectionSpec.getInstance().autoScrollDate;
+        boolean captureFlag = SelectionSpec.getInstance().isCapture();
+
+        CursorBean beanA = null;
+        CursorBean beanB = null;
+        int result = -1;
+        for (CursorBean bean : data) {
+            if (!bean.isDateView()) {
+                continue;
+            }
+            if (captureFlag) {
+                captureFlag = false;
+                continue;
+            }
+            if (bean.getDateValue() == SelectionSpec.getInstance().autoScrollDate) {
+                return bean.getAdapterPosition();
+            }
+            if (beanA == null) {
+                beanA = bean;
+                if (targetDate > beanA.getDateValue()) {
+                    return bean.getAdapterPosition();
+                }
+                continue;
+            }
+            if (beanB == null) {
+                beanB = bean;
+                if (targetDate > beanB.getDateValue() && targetDate < bean.getDateValue()) {
+                    result = compare(beanA, beanB, targetDate).getAdapterPosition();
+                    break;
+                }
+                continue;
+            }
+
+            beanA = beanB;
+            beanB = bean;
+            if (targetDate > beanB.getDateValue() && targetDate < beanA.getDateValue()) {
+                result = compare(beanA, beanB, targetDate).getAdapterPosition();
+                break;
+            }
+        }
+        return result;
+    }
+
+    private static CursorBean compare(CursorBean beanA, CursorBean beanB, long target) {
+        long at = beanA.getDateValue() - target;
+        long bt = beanB.getDateValue() - target;
+        return at > bt ? beanB : beanA;
+    }
+
 }

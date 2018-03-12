@@ -143,6 +143,11 @@ public final class SelectionSpec {
      */
     public InflateItemViewCallback inflateItemViewCallback;
 
+    /**
+     * 自动滚动到相应的日期
+     */
+    public long autoScrollDate = 0;
+
 
     private SelectionSpec() {
     }
@@ -174,6 +179,7 @@ public final class SelectionSpec {
         singleResultModel = false;
         toolbarLayoutId = -1;
         selectedDataList.clear();
+        autoScrollDate = 0;
 
         checkListener = null;
         catchDateSpecCallback = null;
