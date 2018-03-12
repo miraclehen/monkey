@@ -8,6 +8,8 @@ public class CursorBean {
 
     //是否是日期文本
     private boolean isDateView = false;
+    //日期值
+    private long dateValue = 0L;
     //日期文本
     private String dateText = "";
 
@@ -16,8 +18,16 @@ public class CursorBean {
     //在cursor中的位置
     private int cursorPosition = -1;
 
+    public void setDateValue(long dateValue) {
+        this.dateValue = dateValue;
+    }
+
     public boolean isDateView() {
         return isDateView;
+    }
+
+    public long getDateValue() {
+        return dateValue;
     }
 
     public void setDateView(boolean dateView) {

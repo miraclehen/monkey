@@ -34,16 +34,21 @@ import com.miraclehen.monkey.entity.Album;
 import com.miraclehen.monkey.entity.IncapableCause;
 import com.miraclehen.monkey.entity.MediaItem;
 import com.miraclehen.monkey.entity.SelectionSpec;
+import com.miraclehen.monkey.listener.CatchSpecCallbackInvoker;
 import com.miraclehen.monkey.model.AlbumMediaCollection;
 import com.miraclehen.monkey.model.SelectedItemCollection;
 import com.miraclehen.monkey.ui.adapter.AlbumMediaAdapter;
+import com.miraclehen.monkey.ui.adapter.CursorBean;
+import com.miraclehen.monkey.utils.DateTimeUtil;
+
+import java.util.List;
 
 
 /**
  * 一本相册的内容
  */
 public class MediaSelectionFragment extends Fragment implements
-        AlbumMediaCollection.AlbumMediaCallbacks{
+        AlbumMediaCollection.AlbumMediaCallbacks {
 
     public static final String EXTRA_ALBUM = "extra_album";
 
@@ -91,7 +96,7 @@ public class MediaSelectionFragment extends Fragment implements
             throw new IllegalStateException("Context must implement SelectionProvider.");
         }
         if (context instanceof UICallback) {
-            mUICallback = (UICallback)context;
+            mUICallback = (UICallback) context;
         }
     }
 
@@ -118,6 +123,7 @@ public class MediaSelectionFragment extends Fragment implements
         mAdapter = new AlbumMediaAdapter(getContext(), mAlbum,
                 mSelectedItemCollection, mRecyclerView, mSelectionSpec.selectedDataList);
         mAdapter.setUICallback(mUICallback);
+        mAdapter.setOnDataChangeListener(mOnDataChangeListener);
         mRecyclerView.setHasFixedSize(true);
 
         mRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 4));
@@ -127,6 +133,33 @@ public class MediaSelectionFragment extends Fragment implements
         mAlbumMediaCollection.onCreate(getActivity(), this);
         mAlbumMediaCollection.load(mAlbum, mSelectionSpec.captureType);
 
+    }
+
+    AlbumMediaAdapter.OnDataChangeListener mOnDataChangeListener = new AlbumMediaAdapter.OnDataChangeListener() {
+        @Override
+        public void processFinished(Album album, List<CursorBean> dataList, Cursor cursor) {
+            if (dataList == null || cursor.isClosed()) {
+                return;
+            }
+            //回调 获取日期最新的一条数据
+            CatchSpecCallbackInvoker.invokeNewestCallback(mAlbum, dataList, cursor);
+
+            //自动滚动到相应日期位置
+            if (album.isAll() && mSelectionSpec.autoScrollDate > 0) {
+                int adapterPos = DateTimeUtil.calAutoScrollDatePosition(album, dataList, cursor);
+                mSelectionSpec.autoScrollDate = 0;
+                mRecyclerView.scrollToPosition(adapterPos);
+            }
+        }
+    };
+
+
+
+    private long compareRecent(long a, long b, long target) {
+        long c = a - target;
+        long d = target - b;
+
+        return c > d ? b : a;
     }
 
     @Override
@@ -159,7 +192,7 @@ public class MediaSelectionFragment extends Fragment implements
                     mCaptureLaterCallback.later(mediaItem);
                 }
                 return;
-            }else {
+            } else {
                 //不直接返回，并且勾选此数据. 在页面上刷新
                 if (assertAddSelection(getContext(), mediaItem)) {
                     mSelectedItemCollection.add(mediaItem);
@@ -180,6 +213,7 @@ public class MediaSelectionFragment extends Fragment implements
 
     /**
      * 是否能添加
+     *
      * @param context
      * @param item
      * @return
@@ -193,7 +227,7 @@ public class MediaSelectionFragment extends Fragment implements
     /**
      * 消费掉此次拍摄事件
      */
-    private void consumeCaptureEvent(){
+    private void consumeCaptureEvent() {
         //给相关变量赋值
         mCaptureLaterCallback = null;
         mCapturePath = "";
@@ -240,13 +274,13 @@ public class MediaSelectionFragment extends Fragment implements
                 break;
             }
         }
-       updateBottomBarCount();
+        updateBottomBarCount();
     }
 
     /**
      * 更新底部工具栏数字
      */
-    private void updateBottomBarCount(){
+    private void updateBottomBarCount() {
         if (mUICallback != null) {
             mUICallback.updateBottomBarCount();
         }
@@ -263,6 +297,7 @@ public class MediaSelectionFragment extends Fragment implements
 
     /**
      * 拍摄之后的重新加载数据
+     *
      * @param callback
      * @param capturePath
      */

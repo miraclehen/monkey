@@ -93,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         .selectedMediaItem(dataList)
                         .captureFinishBack(false)
                         .captureType(CaptureType.Image)
+                        .autoScrollToDate(1516240550286L)
                         .captureStrategy(new CaptureStrategy(true, "com.miraclehen.sample.fileprovider"))
                         .maxSelectable(20)
                         .toolbarLayoutId(R.layout.layout_custom_tool_bar)
