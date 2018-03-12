@@ -1,4 +1,4 @@
-![d](/Users/hd/Documents/view.jpg)
+![](file:///Users/hd/Documents/view.jpg)
 # monkey
 一个基于Matisse的选择Android设备本地图片以及视频的框架。<br>
 <br>
@@ -177,6 +177,10 @@ toolbarLayoutId | 自定义Toolbar布局Id。注意！View需要设置特定的I
 catchNewestCallback | 获取日期最新的一条数据MediaItem之后，回调相应的方法
 inflateItemViewCallback | 生成item布局时候回调，可以对Item布局进行进一步自定义
 autoScrollToDate | 第一次显示数据的时候，自动滚动到相应日期。如果没有匹配对应的值，那么会滚动到最近的日期值
+
+## 一个人开发这个库不容易，可以请我喝杯咖啡吗？
+![支付宝](file:///Users/hd/Documents/WechatIMG22.jpeg)
+![微信](file:///Users/hd/Documents/WechatIMG23.jpeg)
 
 
 
