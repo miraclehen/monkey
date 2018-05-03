@@ -62,6 +62,9 @@ public class AlbumPreviewActivity extends BasePreviewActivity implements
 
     @Override
     public void onAlbumMediaLoad(Cursor cursor) {
+        if (cursor == null) {
+            return;
+        }
         List<MediaItem> items = new ArrayList<>();
         while (cursor.moveToNext()) {
             items.add(MediaItem.valueOf(cursor));

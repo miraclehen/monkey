@@ -149,6 +149,7 @@ public final class SelectionSpec {
     public long autoScrollDate = 0;
 
 
+
     private SelectionSpec() {
     }
 

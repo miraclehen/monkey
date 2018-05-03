@@ -45,6 +45,7 @@ public class MediaItem implements Parcelable {
     private long width;
     private long height;
     private String originalPath;
+    private int orientation;
 
 
     //----------->>没有去取的字段<<---------
@@ -82,10 +83,11 @@ public class MediaItem implements Parcelable {
         this.latitude = latitude;
         this.longitude = longitude;
         createDate = date;
-        this.width = width;
-        this.height = height;
         originalPath = path;
         this.addDate = addDate;
+        this.width = width;
+        this.height = height;
+
     }
 
     public MediaItem(long id) {
@@ -110,6 +112,7 @@ public class MediaItem implements Parcelable {
                 DateTimeUtil.timeToMs(cursor.getLong(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATE_TAKEN))),
                 DateTimeUtil.timeToMs(cursor.getLong(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATE_ADDED))));
     }
+
 
     public static MediaItem valueOfId(Cursor cursor) {
         return new MediaItem(cursor.getLong(cursor.getColumnIndex(MediaStore.Files.FileColumns._ID)));
@@ -285,6 +288,14 @@ public class MediaItem implements Parcelable {
 
     public void setHeight(long height) {
         this.height = height;
+    }
+
+    public int getOrientation() {
+        return orientation;
+    }
+
+    public void setOrientation(int orientation) {
+        this.orientation = orientation;
     }
 
     public String getOriginalPath() {

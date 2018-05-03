@@ -60,7 +60,9 @@ import com.miraclehen.monkey.ui.PermissionExplainDialog;
 import com.miraclehen.monkey.ui.SelectedPreviewActivity;
 import com.miraclehen.monkey.ui.adapter.AlbumsAdapter;
 import com.miraclehen.monkey.ui.widget.AlbumsSpinner;
+import com.miraclehen.monkey.utils.ContentProviderUtil;
 import com.miraclehen.monkey.utils.MediaStoreCompat;
+import com.miraclehen.monkey.utils.VideoMedataUtil;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -119,8 +121,6 @@ public class MonkeyActivity extends AppCompatActivity implements
     private Toolbar mDefaultToolbar;
     private ViewGroup mCustomToolbar;
 
-
-    private OnScanCompletedListenerImpl mOnScanCompletedCallback;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -299,10 +299,7 @@ public class MonkeyActivity extends AppCompatActivity implements
             }
 
             if (data.getBooleanExtra(BasePreviewActivity.EXTRA_RESULT_APPLY, false)) {
-                Intent result = new Intent();
-                result.putParcelableArrayListExtra(EXTRA_RESULT_SELECTION_ITEM, selected);
-                setResult(RESULT_OK, result);
-                finish();
+                doResult(selected);
             } else {
                 mSelectedCollection.overwrite(selected);
                 Fragment mediaSelectionFragment = getSupportFragmentManager().findFragmentByTag(
@@ -313,39 +310,49 @@ public class MonkeyActivity extends AppCompatActivity implements
                 updateBottomToolbar();
             }
         } else if (requestCode == REQUEST_CODE_CAPTURE) {
-            //拍完照或者录制视频之后
-            //文件的路径
-            final String path = mMediaStoreCompat.getCurrentPhotoPath();
-            File file = new File(path);
-            //文件的Uri
-            Uri contentUri = Uri.fromFile(file);
-//            // 其次把文件插入到系统图库
-//            try {
-//                MediaStore.Images.Media.insertImage(getContentResolver(),
-//                        file.getAbsolutePath(), file.getName(), null);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
+            Uri uri = null;
+            String filePath = "";
 
-            //拍完照或者录制视频之后
-            //通知数据库更新，不然无法显示刚刚拍摄的文件
-            Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-            intent.setData(contentUri);
-            sendBroadcast(intent);
-
-            mOnScanCompletedCallback = new OnScanCompletedListenerImpl(new OnScanCompletedListenerImpl.ScanCompleteCallback() {
-                @Override
-                public void callback(String path, Uri uri) {
-                    scanCompleteHandler.removeMessages(SCAN_COMPLETE_WHAT_CODE);
-                    Message message = Message.obtain();
-                    message.obj = path;
-                    message.what = SCAN_COMPLETE_WHAT_CODE;
-                    scanCompleteHandler.sendMessage(message);
+            if (mSpec.captureType == CaptureType.Image) {
+                //拍完照或者录制视频之后
+                //文件的路径
+                filePath = mMediaStoreCompat.getCurrentCapturePath();
+                File file = new File(filePath);
+//            文件的Uri
+                uri = Uri.fromFile(file);
+            } else {
+                uri = data.getData();
+                if (uri != null) {
+                    filePath = ContentProviderUtil.getVideoPath(uri, getApplicationContext());
                 }
-            });
-            MediaScannerConnection.scanFile(getApplicationContext(), new String[]{path}, null, mOnScanCompletedCallback);
+            }
+
+
+            if (filePath != null && !filePath.equals("")) {
+                MediaScannerConnection.scanFile(getApplicationContext(), new String[]{filePath}, null, mOnScanCompletedCallback);
+            }
+
+            if (uri != null) {
+                //拍完照或者录制视频之后
+                //通知数据库更新，不然无法显示刚刚拍摄的文件
+                Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+                intent.setData(uri);
+                sendBroadcast(intent);
+
+            }
         }
     }
+
+    OnScanCompletedListenerImpl mOnScanCompletedCallback = new OnScanCompletedListenerImpl(new OnScanCompletedListenerImpl.ScanCompleteCallback() {
+        @Override
+        public void callback(String path, Uri uri) {
+            scanCompleteHandler.removeMessages(SCAN_COMPLETE_WHAT_CODE);
+            Message message = Message.obtain();
+            message.obj = path;
+            message.what = SCAN_COMPLETE_WHAT_CODE;
+            scanCompleteHandler.sendMessage(message);
+        }
+    });
 
     Handler scanCompleteHandler = new Handler() {
         @Override
@@ -373,13 +380,25 @@ public class MonkeyActivity extends AppCompatActivity implements
         @Override
         public void later(MediaItem mediaItem) {
             mSelectedCollection.add(mediaItem);
-            Intent result = new Intent();
-            result.putParcelableArrayListExtra(EXTRA_RESULT_SELECTION_ITEM,
-                    mSelectedCollection.asList(true));
-            setResult(RESULT_OK, result);
-            finish();
+            doResult(mSelectedCollection.asList(true));
         }
     };
+
+    private void doResult(ArrayList<MediaItem> list) {
+        Intent result = new Intent();
+        if (mSpec.onlyShowVideos()) {
+            //视频
+            for (MediaItem item : list) {
+                long[] medataInfo = VideoMedataUtil.getMedataInfo2(item.getOriginalPath());
+                item.setWidth(medataInfo[0]);
+                item.setHeight(medataInfo[1]);
+                item.setOrientation((int) medataInfo[2]);
+            }
+        }
+        result.putParcelableArrayListExtra(EXTRA_RESULT_SELECTION_ITEM, list);
+        setResult(RESULT_OK, result);
+        finish();
+    }
 
     private void updateBottomToolbar() {
         int selectedCount = mSelectedCollection.count() + mSpec.selectedDataList.size();
@@ -403,10 +422,7 @@ public class MonkeyActivity extends AppCompatActivity implements
             startActivityForResult(intent, REQUEST_CODE_PREVIEW);
         } else if (v.getId() == R.id.button_apply) {
             //使用按钮被点击
-            Intent result = new Intent();
-            result.putParcelableArrayListExtra(EXTRA_RESULT_SELECTION_ITEM, mSelectedCollection.asList(true));
-            setResult(RESULT_OK, result);
-            finish();
+            doResult(mSelectedCollection.asList(true));
         }
     }
 

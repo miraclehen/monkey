@@ -78,6 +78,9 @@ public final class PhotoMetadataUtils {
     }
 
     public static Point getBitmapBound(ContentResolver resolver, Uri uri) {
+        if (uri == null) {
+            return new Point(0, 0);
+        }
         InputStream is = null;
         try {
             BitmapFactory.Options options = new BitmapFactory.Options();
@@ -171,7 +174,11 @@ public final class PhotoMetadataUtils {
     private static boolean shouldRotate(ContentResolver resolver, Uri uri) {
         ExifInterface exif;
         try {
-            exif = ExifInterfaceCompat.newInstance(getPath(resolver, uri));
+            String path = getPath(resolver, uri);
+            if (path == null) {
+                return false;
+            }
+            exif = ExifInterfaceCompat.newInstance(path);
         } catch (IOException e) {
             Log.e(TAG, "could not read exif info of the image: " + uri);
             return false;

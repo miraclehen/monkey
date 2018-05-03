@@ -21,7 +21,6 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -126,7 +125,7 @@ public class MediaSelectionFragment extends Fragment implements
         mAdapter.setOnDataChangeListener(mOnDataChangeListener);
         mRecyclerView.setHasFixedSize(true);
 
-        mRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 4));
+        mRecyclerView.setLayoutManager(new NpaGridLayoutManager(getContext(), 4));
 //        mRecyclerView.addItemDecoration(new SpacesItemDecoration(UIUtils.convertDIPToPixels(getContext(), 2)));
 
         mRecyclerView.setAdapter(mAdapter);
@@ -184,6 +183,12 @@ public class MediaSelectionFragment extends Fragment implements
         if (isCaptureLater) {
             //拍摄之后回来的
             //先获取到该条数据cursor
+            if (cursor.getPosition() == -1) {
+                cursor.moveToNext();
+            }
+            if (cursor.getCount() == 0) {
+                return;
+            }
             Cursor captureCursor = obtainCaptureCursor(cursor);
             MediaItem mediaItem = MediaItem.valueOf(cursor);
             if (mSelectionSpec.captureFinishBack) {

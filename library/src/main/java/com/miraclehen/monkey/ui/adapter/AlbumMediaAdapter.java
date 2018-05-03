@@ -125,6 +125,9 @@ public class AlbumMediaAdapter extends
 
     private void processData(Cursor newCursor) {
         //日期与cursor的位置
+        if (mDateWithPosMap == null) {
+            return;
+        }
         mDateWithPosMap.clear();
         mDateList.clear();
         mCursorBeanList.clear();
@@ -318,6 +321,9 @@ public class AlbumMediaAdapter extends
             //MediaView Holder ,也就是Cursor视图
             MediaViewHolder mediaViewHolder = (MediaViewHolder) holder;
 
+            if (cursor == null) {
+                return;
+            }
             final MediaItem item = MediaItem.valueOf(cursor);
 
             if (mSelectionSpec.inflateItemViewCallback != null) {
@@ -492,6 +498,9 @@ public class AlbumMediaAdapter extends
 
     @Override
     public int getItemViewType(int position, Cursor cursor) {
+        if (cursor == null) {
+            return VIEW_TYPE_MEDIA;
+        }
         MediaItem item = MediaItem.valueOfId(cursor);
         boolean capture = item.isCapture();
         boolean record = item.isRecord();

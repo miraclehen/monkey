@@ -392,4 +392,5 @@ public final class SelectionCreator {
         mSelectionSpec.autoScrollDate = millisecond;
         return this;
     }
+
 }

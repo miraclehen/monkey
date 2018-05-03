@@ -51,7 +51,7 @@ public class MediaStoreCompat {
     private final WeakReference<Fragment> mFragment;
     private CaptureStrategy mCaptureStrategy;
     private Uri mCurrentPhotoUri;
-    private String mCurrentPhotoPath;
+    private String mCurrentCapturePath;
 
     private SelectionSpec mSpec;
 
@@ -86,47 +86,53 @@ public class MediaStoreCompat {
     /**
      * 启动拍照或者录像功能
      *
-     * @param context
+     * @param activity
      * @param requestCode
      */
-    public void dispatchCaptureIntent(Context context, int requestCode) {
-        Intent captureIntent = mSpec.captureType == CaptureType.Image
-                ? new Intent(MediaStore.ACTION_IMAGE_CAPTURE) : new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-        if (captureIntent.resolveActivity(context.getPackageManager()) != null) {
-            File targetFile = null;
-            try {
-                targetFile = createFile(mSpec.captureType);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+    public void dispatchCaptureIntent(Activity activity, int requestCode) {
+        if (mSpec.captureType == CaptureType.Image) {
+            Intent imageIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            if (imageIntent.resolveActivity(activity.getPackageManager()) != null) {
+                File targetFile = null;
+                try {
+                    targetFile = createFile(mSpec.captureType);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
-            if (targetFile != null) {
-                //获取文件绝对路径
-                mCurrentPhotoPath = targetFile.getAbsolutePath();
-                //获取文件对应的Uri
-                mCurrentPhotoUri = FileProvider.getUriForFile(mContext.get(),
-                        mCaptureStrategy.authority, targetFile);
-
-//                mCurrentPhotoUri = Uri.fromFile(new File(mCurrentPhotoPath));
-                captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, mCurrentPhotoUri);
-                captureIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                    List<ResolveInfo> resInfoList = context.getPackageManager()
-                            .queryIntentActivities(captureIntent, PackageManager.MATCH_DEFAULT_ONLY);
-                    for (ResolveInfo resolveInfo : resInfoList) {
-                        String packageName = resolveInfo.activityInfo.packageName;
-                        context.grantUriPermission(packageName, mCurrentPhotoUri,
-                                Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                if (targetFile != null) {
+                    try {
+                        //获取文件绝对路径
+                        mCurrentCapturePath = targetFile.getAbsolutePath();
+                        //获取文件对应的Uri
+                        mCurrentPhotoUri = FileProvider.getUriForFile(mContext.get(),
+                                mCaptureStrategy.authority, targetFile);
+                    }catch (Exception e){
+                        e.printStackTrace();
                     }
+//                mCurrentPhotoUri = Uri.fromFile(new File(mCurrentCapturePath));
+                    imageIntent.putExtra(MediaStore.EXTRA_OUTPUT, mCurrentPhotoUri);
+                    imageIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+                        List<ResolveInfo> resInfoList = activity.getPackageManager()
+                                .queryIntentActivities(imageIntent, PackageManager.MATCH_DEFAULT_ONLY);
+                        for (ResolveInfo resolveInfo : resInfoList) {
+                            String packageName = resolveInfo.activityInfo.packageName;
+                            activity.grantUriPermission(packageName, mCurrentPhotoUri,
+                                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        }
+                    }
+                    activity.startActivityForResult(imageIntent, requestCode);
                 }
-                if (mFragment != null) {
-                    mFragment.get().startActivityForResult(captureIntent, requestCode);
-                } else {
-                    mContext.get().startActivityForResult(captureIntent, requestCode);
-                }
+            }
+        } else if (mSpec.captureType == CaptureType.Video) {
+            Intent videoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+            if (videoIntent.resolveActivity(activity.getPackageManager()) != null) {
+                activity.startActivityForResult(videoIntent, requestCode);
             }
         }
     }
+
 
     /**
      * 创建文件
@@ -174,13 +180,13 @@ public class MediaStoreCompat {
         return mCurrentPhotoUri;
     }
 
-    public String getCurrentPhotoPath() {
-        return mCurrentPhotoPath;
+    public String getCurrentCapturePath() {
+        return mCurrentCapturePath;
     }
 
     public void onSaveInstanceState(Bundle outState) {
         outState.putParcelable(BUNDLE_KEY_MEDIA_STORE_COMPAT_URI, mCurrentPhotoUri);
-        outState.putString(BUNDLE_KEY_MEDIA_STORE_COMPAT_PATH, mCurrentPhotoPath);
+        outState.putString(BUNDLE_KEY_MEDIA_STORE_COMPAT_PATH, mCurrentCapturePath);
     }
 
     public void onRestoreInstanceState(Bundle savedInstanceState) {
@@ -191,7 +197,7 @@ public class MediaStoreCompat {
             mCurrentPhotoUri = savedInstanceState.getParcelable(BUNDLE_KEY_MEDIA_STORE_COMPAT_URI);
         }
         if (!TextUtils.isEmpty(savedInstanceState.getString(BUNDLE_KEY_MEDIA_STORE_COMPAT_PATH))) {
-            mCurrentPhotoPath = savedInstanceState.getString(BUNDLE_KEY_MEDIA_STORE_COMPAT_PATH);
+            mCurrentCapturePath = savedInstanceState.getString(BUNDLE_KEY_MEDIA_STORE_COMPAT_PATH);
         }
     }
 }
