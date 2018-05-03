@@ -28,6 +28,7 @@ import com.miraclehen.monkey.filter.Filter;
 import com.miraclehen.monkey.listener.CatchSpecMediaItemCallback;
 import com.miraclehen.monkey.listener.InflateItemViewCallback;
 import com.miraclehen.monkey.listener.OnItemCheckChangeListener;
+import com.miraclehen.monkey.listener.OnLoadAlbumsCallback;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -148,6 +149,8 @@ public final class SelectionSpec {
      */
     public long autoScrollDate = 0;
 
+    public OnLoadAlbumsCallback mOnLoadAlbumsCallback;
+
 
 
     private SelectionSpec() {
@@ -186,6 +189,7 @@ public final class SelectionSpec {
         catchDateSpecCallback = null;
         catchNewestSpecCallback = null;
         inflateItemViewCallback = null;
+        mOnLoadAlbumsCallback = null;
     }
 
     public boolean singleSelectionModeEnabled() {

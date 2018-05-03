@@ -19,6 +19,7 @@ import com.miraclehen.monkey.entity.CaptureStrategy;
 import com.miraclehen.monkey.entity.MediaItem;
 import com.miraclehen.monkey.listener.InflateItemViewCallback;
 import com.miraclehen.monkey.listener.OnItemCheckChangeListener;
+import com.miraclehen.monkey.listener.OnLoadAlbumsCallback;
 import com.miraclehen.monkey.ui.widget.MediaGrid;
 import com.miraclehen.monkey.utils.UIUtils;
 
@@ -68,6 +69,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         .choose(MimeType.ofImageExcludeGif())
                         .singleResultModel(true)
                         .imageEngine(new GlideEngine())
+                        .onLoadAlbumsCallback(new OnLoadAlbumsCallback() {
+                            @Override
+                            public void callback() {
+                                Log.i(TAG, "相册打开了！！！");
+                            }
+                        })
                         .forResult(REQUEST_CODE_CHOOSE);
                 break;
             case R.id.simple_multi_video:

@@ -169,8 +169,22 @@ public class MonkeyActivity extends AppCompatActivity implements
         }
     }
 
+    /**
+     * 加载相册
+     */
     private void loadAlbums() {
+        notifyOnLoadAlbumsCallback();
         mAlbumCollection.loadAlbums();
+    }
+
+    /**
+     * 回调对应的callback
+     */
+    private void notifyOnLoadAlbumsCallback(){
+        if (mSpec.mOnLoadAlbumsCallback != null) {
+            mSpec.mOnLoadAlbumsCallback.callback();
+            mSpec.mOnLoadAlbumsCallback = null;
+        }
     }
 
     private void initViews() {

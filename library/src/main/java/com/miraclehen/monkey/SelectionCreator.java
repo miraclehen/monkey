@@ -34,6 +34,7 @@ import com.miraclehen.monkey.filter.Filter;
 import com.miraclehen.monkey.listener.CatchSpecMediaItemCallback;
 import com.miraclehen.monkey.listener.InflateItemViewCallback;
 import com.miraclehen.monkey.listener.OnItemCheckChangeListener;
+import com.miraclehen.monkey.listener.OnLoadAlbumsCallback;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -390,6 +391,19 @@ public final class SelectionCreator {
             throw new IllegalArgumentException("scrollToDate < 0");
         }
         mSelectionSpec.autoScrollDate = millisecond;
+        return this;
+    }
+
+    /**
+     * 当加载相册时候回调。
+     * 注意：仅仅回调一次，可以用来当启动相册做一些额外的操作
+     * @param callback
+     * @return
+     */
+    public SelectionCreator onLoadAlbumsCallback(OnLoadAlbumsCallback callback) {
+        if (callback != null) {
+            mSelectionSpec.mOnLoadAlbumsCallback = callback;
+        }
         return this;
     }
 
