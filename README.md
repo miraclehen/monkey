@@ -179,9 +179,6 @@ inflateItemViewCallback | 生成item布局时候回调，可以对Item布局进�
 autoScrollToDate | 第一次显示数据的时候，自动滚动到相应日期。如果没有匹配对应的值，那么会滚动到最近的日期值
 <br>
 
-#### 如果这个library帮助了你，可以请我喝杯咖啡吗？
-![支付宝](/image/WechatIMG1007.jpeg)
-![微信](/image/WechatIMG1008.jpeg)
 
 
 
